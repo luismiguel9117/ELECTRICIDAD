@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Type Garden</title>
+  <title>Type Garden & Electricity</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
@@ -83,6 +83,51 @@
       pointer-events: none;
     }
 
+    /* Top Left: Theme Switcher */
+    [data-tg="themes"] {
+      position: absolute;
+      top: calc(16px + env(safe-area-inset-top));
+      left: calc(24px + env(safe-area-inset-left));
+      z-index: 10;
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid #2A2A2A;
+      border-radius: 999px;
+      background: #000000d0;
+      backdrop-filter: blur(10px);
+    }
+
+    .theme-btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 7px 15px;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      background: transparent;
+      color: #8C8C8C;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+    .theme-btn:hover {
+      color: #FFF;
+    }
+    .theme-btn.active.garden {
+      background: #FFFFFF;
+      color: #000000;
+      box-shadow: 0 0 14px rgba(255, 255, 255, 0.25);
+    }
+    .theme-btn.active.electric {
+      background: #00F0FF;
+      color: #000000;
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.5);
+    }
+
+    /* Top Right: Mode Switcher */
     [data-tg="modes"] {
       position: absolute;
       top: calc(16px + env(safe-area-inset-top));
@@ -93,8 +138,8 @@
       padding: 4px;
       border: 1px solid #2A2A2A;
       border-radius: 999px;
-      background: #000;
-      backdrop-filter: blur(8px);
+      background: #000000d0;
+      backdrop-filter: blur(10px);
     }
 
     .mode-btn {
@@ -105,7 +150,7 @@
       letter-spacing: 0.04em;
       cursor: pointer;
       background: transparent;
-      color: #BDBDBD;
+      color: #8C8C8C;
       transition: all 0.2s ease;
     }
     .mode-btn.active {
@@ -143,7 +188,7 @@
       flex-wrap: wrap;
       align-items: center;
       user-select: none;
-      opacity: 0.7;
+      opacity: 0.75;
     }
 
     [data-tg="coarse"] { display: none; }
@@ -425,14 +470,18 @@
       font-weight: 500;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
+      [data-tg="themes"] {
+        left: calc(16px + env(safe-area-inset-left)) !important;
+        top: calc(16px + env(safe-area-inset-top)) !important;
+      }
       [data-tg="bar"] {
         left: calc(16px + env(safe-area-inset-left)) !important;
         right: calc(16px + env(safe-area-inset-right)) !important;
         bottom: calc(14px + env(safe-area-inset-bottom)) !important;
         gap: 10px !important;
       }
-      [data-tg="hints"] { gap: 12px !important; font-size: 11px; }
+      [data-tg="hints"] { gap: 10px !important; font-size: 11px; }
       [data-tg="ctrls"] { flex: 1 1 100%; justify-content: space-between; gap: 8px !important; }
       [data-tg="pal"] { gap: 4px !important; }
       .swatch-btn {
@@ -441,12 +490,9 @@
       }
       .swatch-dot { width: 46%; height: 46%; }
       .action-btn { padding: 7px 11px !important; font-size: 11px; }
-      .tg-peer { font-size: 10px; }
-      .tg-peer svg { width: 15px; height: 17px; }
-      .tg-peer span { left: 12px; top: 15px; padding: 3px 7px; }
-    }
+      .theme-btn { padding: 6px 10px; font-size: 11px; }
+      .mode-btn { padding: 6px 12px; font-size: 11px; }
 
-    @media (max-width: 768px) {
       [data-tg="poster"] {
         display: flex !important;
         flex-direction: column;
@@ -489,7 +535,13 @@
   <div data-tg="app" id="app">
     <canvas id="mainCanvas"></canvas>
     <div data-tg="peers" id="peersContainer" aria-hidden="true"></div>
-    <input id="hiddenInput" data-tg="input" aria-label="Type to grow a garden" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false">
+    <input id="hiddenInput" data-tg="input" aria-label="Type here" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false">
+
+    <!-- Concept / Theme Selector (Garden vs Electricity) -->
+    <div data-tg="themes">
+      <button class="theme-btn active garden" id="btnThemeGarden">🌸 Garden</button>
+      <button class="theme-btn" id="btnThemeElectric">⚡ Electricity</button>
+    </div>
 
     <!-- Mode Selector -->
     <div data-tg="modes">
@@ -499,14 +551,14 @@
 
     <!-- Type Bar (Bottom UI) -->
     <div data-tg="bar" id="typeBar">
-      <div data-tg="hints">
-        <span data-tg="fine">type to grow</span>
-        <span data-tg="coarse">tap to type</span>
-        <span>space cuts</span>
-        <span data-tg="fine">backspace withers</span>
-        <span data-tg="coarse">⌫ withers</span>
-        <span data-tg="fine">enter clears</span>
-        <span data-tg="coarse">return clears</span>
+      <div data-tg="hints" id="hintsContainer">
+        <span data-tg="fine" id="hintType">type to grow</span>
+        <span data-tg="coarse" id="hintTap">tap to type</span>
+        <span id="hintCut">space cuts</span>
+        <span data-tg="fine" id="hintWither">backspace withers</span>
+        <span data-tg="coarse" id="hintWitherC">⌫ withers</span>
+        <span data-tg="fine" id="hintClear">enter clears</span>
+        <span data-tg="coarse" id="hintClearC">return clears</span>
         <span data-tg="count" id="gardenerCount"></span>
       </div>
       <div data-tg="ctrls">
@@ -520,14 +572,14 @@
     <div data-tg="poster" id="posterView" style="display: none;">
       <div data-tg="panel">
         <div style="display:flex; flex-direction:column; gap:4px">
-          <div class="poster-heading">Poster</div>
+          <div class="poster-heading" id="posterTitle">Poster</div>
           <div style="color:#8C8C8C" id="posterInfoLabel">1:1 · 3s loop · 30 fps</div>
         </div>
 
         <div style="display:flex; flex-direction:column; gap:10px">
           <div class="section-title">Words</div>
-          <input class="poster-input" id="posterTextInput" value="in bloom" spellcheck="false">
-          <button class="action-btn" id="btnReshuffle" style="align-self: flex-start;">Regrow garden</button>
+          <input class="poster-input" id="posterTextInput" value="voltage" spellcheck="false">
+          <button class="action-btn" id="btnReshuffle" style="align-self: flex-start;">Regenerate</button>
         </div>
 
         <div style="display:flex; flex-direction:column; gap:10px">
@@ -558,8 +610,8 @@
   (function() {
     'use strict';
 
-    // ---------- PALETTES & PRESETS ----------
-    const PAL = [
+    // ---------- PALETTES & PRESETS: GARDEN ----------
+    const PAL_GARDEN = [
       ['Rose noir', '#000000', '#FF1400', '#3257FF', '#FFB4A8', '#FFFFFF'],
       ['Paper',     '#F3EEE4', '#FF3B1F', '#1C2B8F', '#FFD2C4', '#111111'],
       ['Midnight',  '#0D1B4C', '#FF5A4E', '#9FB4FF', '#FFD6CF', '#FFFFFF'],
@@ -572,7 +624,7 @@
       ['Mono',      '#000000', '#F2F2F2', '#6E6E6E', '#000000', '#FFFFFF']
     ];
 
-    const PRESETS = [
+    const PRESETS_GARDEN = [
       { id: 'breathe', label: 'Breathe',        sub: 'Slow sway · 3s',       T: 3000 },
       { id: 'grow',    label: 'Grow & wither',  sub: 'Bloom, then back · 6s', T: 6000 },
       { id: 'typed',   label: 'Typed',          sub: 'Type, cut, repeat · 5s', T: 5000 },
@@ -582,17 +634,41 @@
       { id: 'visit',   label: 'Visitor',        sub: 'Butterfly drops by · 7s', T: 7000 }
     ];
 
-    const FLOWERS = ['iris', 'fern', 'poppy', 'tulip', 'violet', 'clover', 'daisy', 'lilac', 'aster', 'peony', 'sorrel', 'yarrow', 'thistle', 'bluebell', 'foxglove', 'primrose'];
-    const TINTS = ['#FF8A00', '#E63CFF', '#7FD18B', '#9FB4FF', '#FFB7C5', '#FFE2B8', '#2FB8A6', '#FFD23F'];
-    const SENT = String.fromCharCode(0x200b); // Zero-width space sentinel
+    // ---------- PALETTES & PRESETS: ELECTRICITY ----------
+    const PAL_ELECTRIC = [
+      ['Arc Neon',      '#04040A', '#00F0FF', '#7928CA', '#B983FF', '#FFFFFF'],
+      ['High Voltage',  '#060608', '#FFE600', '#FF3300', '#FFAA00', '#FFFFFF'],
+      ['Matrix PCB',    '#020A04', '#39FF14', '#005C1E', '#88FF77', '#E8FFE8'],
+      ['Plasma Violet', '#0A0012', '#FF007F', '#00D4FF', '#FF80BF', '#FFFFFF'],
+      ['Biolight Blue', '#020C18', '#00E5FF', '#0048BA', '#80F2FF', '#FFFFFF'],
+      ['Solar Flare',   '#110400', '#FF6B00', '#FFC400', '#FFE082', '#FFF8E7'],
+      ['Cryo White',    '#020508', '#FFFFFF', '#475569', '#94A3B8', '#FFFFFF'],
+      ['Dark Copper',   '#0E0B08', '#FF9E4A', '#4A3525', '#D4A373', '#FDF6ED']
+    ];
+
+    const PRESETS_ELECTRIC = [
+      { id: 'breathe', label: 'AC Oscillation', sub: 'Sine wave cycle · 3s',    T: 3000 },
+      { id: 'grow',    label: 'Overcharge',     sub: 'Build up, discharge · 6s', T: 6000 },
+      { id: 'typed',   label: 'Digital Pulse',  sub: 'Trace conduction · 5s',    T: 5000 },
+      { id: 'wind',    label: 'Voltage Surge',  sub: 'EMP wave sweeps · 4s',     T: 4000 },
+      { id: 'reach',   label: 'Attraction',     sub: 'Arcs seek electrode · 6s', T: 6000 },
+      { id: 'scatter', label: 'Spark Storm',    sub: 'Chaotic static arcs · 6s', T: 6000 },
+      { id: 'visit',   label: 'Ball Lightning', sub: 'Plasma wisp roams · 7s',   T: 7000 }
+    ];
+
+    const FLOWERS = ['iris', 'fern', 'poppy', 'tulip', 'violet', 'clover', 'daisy', 'lilac', 'aster', 'peony'];
+    const NODES_NAMES = ['tesla', 'volta', 'plasma', 'flux', 'ampere', 'ohm', 'farad', 'joule', 'hertz', 'spark'];
+    const TINTS = ['#FF8A00', '#E63CFF', '#7FD18B', '#9FB4FF', '#FFB7C5', '#FFE2B8', '#2FB8A6', '#00F0FF', '#FFE600'];
+    const SENT = String.fromCharCode(0x200b);
     const FONT_FAMILY = '"Playfair Display", Georgia, serif';
 
     // ---------- APP STATE ----------
     const state = {
-      mode: 'type', // 'type' | 'poster'
+      theme: 'garden', // 'garden' | 'electric'
+      mode: 'type',    // 'type' | 'poster'
       preset: 'breathe',
       palette: 0,
-      text: 'in bloom',
+      text: 'bloom',
       seed: 7,
       status: '',
       busy: false,
@@ -610,6 +686,8 @@
     const peersContainer = document.getElementById('peersContainer');
     const typeBar = document.getElementById('typeBar');
     const posterView = document.getElementById('posterView');
+    const btnThemeGarden = document.getElementById('btnThemeGarden');
+    const btnThemeElectric = document.getElementById('btnThemeElectric');
     const btnModeType = document.getElementById('btnModeType');
     const btnModePoster = document.getElementById('btnModePoster');
     const paletteBar = document.getElementById('paletteBar');
@@ -624,6 +702,15 @@
     const btnSavePNG = document.getElementById('btnSavePNG');
     const btnSaveSVG = document.getElementById('btnSaveSVG');
     const gardenerCountEl = document.getElementById('gardenerCount');
+
+    // Hint labels
+    const hintType = document.getElementById('hintType');
+    const hintTap = document.getElementById('hintTap');
+    const hintCut = document.getElementById('hintCut');
+    const hintWither = document.getElementById('hintWither');
+    const hintWitherC = document.getElementById('hintWitherC');
+    const hintClear = document.getElementById('hintClear');
+    const hintClearC = document.getElementById('hintClearC');
 
     const g = mainCanvas.getContext('2d');
     const pg = posterCanvas.getContext('2d');
@@ -666,10 +753,28 @@
     let roster = {};
 
     const pickRandom = a => a[Math.floor(Math.random() * a.length)];
-    const me = { id: Math.random().toString(36).slice(2, 10), n: pickRandom(FLOWERS), c: pickRandom(TINTS) };
+    const me = { id: Math.random().toString(36).slice(2, 10), n: pickRandom(state.theme === 'electric' ? NODES_NAMES : FLOWERS), c: pickRandom(TINTS) };
 
     const vmime = typeof MediaRecorder !== 'undefined' ?
       ['video/mp4;codecs=avc1.42E01E', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find(m => MediaRecorder.isTypeSupported(m)) : null;
+
+    // Helper to get active palette list and presets
+    const getPalettesList = () => state.theme === 'electric' ? PAL_ELECTRIC : PAL_GARDEN;
+    const getPresetsList = () => state.theme === 'electric' ? PRESETS_ELECTRIC : PRESETS_GARDEN;
+
+    const getPal = () => {
+      const list = getPalettesList();
+      const p = list[state.palette % list.length] || list[0];
+      return {
+        name: p[0],
+        bg: p[1],
+        flower: p[2],
+        stem: p[3],
+        line: p[4],
+        text: p[5],
+        C: { red: p[2], blue: p[3], line: p[4], text: p[5], vein: p[1] }
+      };
+    };
 
     // ---------- MATH & CURVE UTILITIES ----------
     const h = n => { const x = Math.sin(n) * 43758.5453; return x - Math.floor(x); };
@@ -702,59 +807,143 @@
     };
     const jit = (id, f, amp) => {
       if (!amp) return [0, 0, 0];
+      const mult = state.theme === 'electric' ? 1.6 : 1;
       return [
-        (h(id * 1.37 + f * 7.13) * 2 - 1) * amp,
-        (h(id * 2.71 + f * 3.11) * 2 - 1) * amp,
-        (h(id * 5.3 + f * 1.7) * 2 - 1) * 0.035
+        (h(id * 1.37 + f * 7.13) * 2 - 1) * amp * mult,
+        (h(id * 2.71 + f * 3.11) * 2 - 1) * amp * mult,
+        (h(id * 5.3 + f * 1.7) * 2 - 1) * 0.035 * mult
       ];
     };
+
     const path = (ctx, p, closed) => {
       const n = p.length; if (n < 2) return;
-      const m = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-      if (closed) {
-        const s = m(p[n - 1], p[0]);
-        ctx.moveTo(s[0], s[1]);
-        for (let i = 0; i < n; i++) {
-          const q = m(p[i], p[(i + 1) % n]);
-          ctx.quadraticCurveTo(p[i][0], p[i][1], q[0], q[1]);
-        }
-        ctx.closePath();
-      } else {
+      if (state.theme === 'electric') {
+        // High-tech angular / crisp polygonal line
         ctx.moveTo(p[0][0], p[0][1]);
-        for (let i = 1; i < n - 1; i++) {
-          const q = m(p[i], p[i + 1]);
-          ctx.quadraticCurveTo(p[i][0], p[i][1], q[0], q[1]);
+        for (let i = 1; i < n; i++) ctx.lineTo(p[i][0], p[i][1]);
+        if (closed) ctx.closePath();
+      } else {
+        // Organic smooth curve
+        const m = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+        if (closed) {
+          const s = m(p[n - 1], p[0]);
+          ctx.moveTo(s[0], s[1]);
+          for (let i = 0; i < n; i++) {
+            const q = m(p[i], p[(i + 1) % n]);
+            ctx.quadraticCurveTo(p[i][0], p[i][1], q[0], q[1]);
+          }
+          ctx.closePath();
+        } else {
+          ctx.moveTo(p[0][0], p[0][1]);
+          for (let i = 1; i < n - 1; i++) {
+            const q = m(p[i], p[i + 1]);
+            ctx.quadraticCurveTo(p[i][0], p[i][1], q[0], q[1]);
+          }
+          ctx.lineTo(p[n - 1][0], p[n - 1][1]);
         }
-        ctx.lineTo(p[n - 1][0], p[n - 1][1]);
       }
     };
+
     const backend = ctx => ({
       fill: (p, col) => { ctx.beginPath(); path(ctx, p, true); ctx.fillStyle = col; ctx.fill(); },
-      stroke: (p, col, width) => { ctx.beginPath(); path(ctx, p, false); ctx.strokeStyle = col; ctx.lineWidth = width; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(); },
-      rect: (x, y, w, h, col) => { ctx.fillStyle = col; ctx.fillRect(x, y, w, h); },
-      text: (ch, x, y, S, col) => { ctx.font = `700 ${S}px ${FONT_FAMILY}`; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = col; ctx.fillText(ch, x, y); }
+      stroke: (p, col, width) => {
+        ctx.beginPath();
+        path(ctx, p, false);
+        ctx.strokeStyle = col;
+        ctx.lineWidth = width;
+        ctx.lineCap = state.theme === 'electric' ? 'square' : 'round';
+        ctx.lineJoin = state.theme === 'electric' ? 'miter' : 'round';
+        if (state.theme === 'electric') {
+          ctx.shadowColor = col;
+          ctx.shadowBlur = 8;
+        }
+        ctx.stroke();
+        if (state.theme === 'electric') ctx.shadowBlur = 0;
+      },
+      rect: (x, y, w, h_val, col) => { ctx.fillStyle = col; ctx.fillRect(x, y, w, h_val); },
+      text: (ch, x, y, S, col) => {
+        ctx.font = `700 ${S}px ${FONT_FAMILY}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'alphabetic';
+        if (state.theme === 'electric') {
+          ctx.shadowColor = col;
+          ctx.shadowBlur = 10;
+        }
+        ctx.fillStyle = col;
+        ctx.fillText(ch, x, y);
+        if (state.theme === 'electric') ctx.shadowBlur = 0;
+      }
     });
+
+    // ---------- PATH GENERATORS ----------
+    // 1. Organic Vine (Garden)
     const vine = (base, dir, len, amp, waves, ph, bend, n = 40) => {
-      const P = [[base[0], base[1]]], step = len / n;
+      const P_pts = [[base[0], base[1]]], step = len / n;
       let x = base[0], y = base[1];
       for (let i = 1; i <= n; i++) {
         const u = i / n, a = dir + bend * u + amp * Math.sin(u * Math.PI * waves + ph) * Math.min(1, u * 3);
         x += Math.cos(a) * step;
         y += Math.sin(a) * step;
-        P.push([x, y]);
+        P_pts.push([x, y]);
       }
-      return P;
+      return P_pts;
     };
-    const curl = (P, sign, rad) => {
-      const n = P.length, e = P[n - 1], a = Math.atan2(e[1] - P[n - 2][1], e[0] - P[n - 2][0]);
+
+    // 2. Lightning Bolt / Jagged Arc (Electricity)
+    const lightning = (r, base, dir, len, n = 28) => {
+      const P_pts = [[base[0], base[1]]];
+      let x = base[0], y = base[1];
+      const step = len / n;
+      let curDir = dir;
+      for (let i = 1; i <= n; i++) {
+        const u = i / n;
+        const jitterAngle = (r() - 0.5) * 1.5;
+        curDir = dir + jitterAngle * (0.8 + 0.4 * Math.sin(u * 10));
+        const segLen = step * (0.7 + r() * 0.6);
+        x += Math.cos(curDir) * segLen;
+        y += Math.sin(curDir) * segLen;
+        P_pts.push([x, y]);
+      }
+      return P_pts;
+    };
+
+    // 3. PCB Circuit Trace: 45° and 90° Manhattan geometry (Electricity)
+    const pcbTrace = (r, base, dir, len, n = 14) => {
+      const P_pts = [[base[0], base[1]]];
+      let x = base[0], y = base[1];
+      const snapAngles = [-Math.PI/2, -Math.PI/4, 0, Math.PI/4, Math.PI/2, 3*Math.PI/4, Math.PI, -3*Math.PI/4];
+      const snap = a => {
+        let best = snapAngles[0], bd = 1e9;
+        for (const sa of snapAngles) {
+          const d = Math.abs(Math.atan2(Math.sin(a - sa), Math.cos(a - sa)));
+          if (d < bd) { bd = d; best = sa; }
+        }
+        return best;
+      };
+      let curAngle = snap(dir);
+      const step = len / n;
+      for (let i = 1; i <= n; i++) {
+        if (r() < 0.35) {
+          curAngle = snap(curAngle + (r() < 0.5 ? 1 : -1) * (Math.PI / 4));
+        }
+        x += Math.cos(curAngle) * step;
+        y += Math.sin(curAngle) * step;
+        P_pts.push([x, y]);
+      }
+      return P_pts;
+    };
+
+    const curl = (P_pts, sign, rad) => {
+      const n = P_pts.length, e = P_pts[n - 1], a = Math.atan2(e[1] - P_pts[n - 2][1], e[0] - P_pts[n - 2][0]);
       const c = [e[0] - Math.sin(a) * sign * rad, e[1] + Math.cos(a) * sign * rad];
       const a0 = Math.atan2(e[1] - c[1], e[0] - c[0]);
       for (let i = 1; i <= 14; i++) {
         const u = i / 14, t = a0 + sign * u * Math.PI * 1.6, rr = rad * (1 - 0.5 * u);
-        P.push([c[0] + Math.cos(t) * rr, c[1] + Math.sin(t) * rr]);
+        P_pts.push([c[0] + Math.cos(t) * rr, c[1] + Math.sin(t) * rr]);
       }
-      return P;
+      return P_pts;
     };
+
     const weave = (r, startLayer) => {
       const cuts = []; const nc = 1 + Math.floor(r() * 3);
       for (let i = 0; i < nc; i++) cuts.push(0.15 + r() * 0.7);
@@ -769,23 +958,10 @@
       segs.push({ u0, u1: 1, layer });
       return segs;
     };
+
     const layerAt = (segs, u) => {
       for (const s of segs) if (u >= s.u0 && u <= s.u1) return s.layer;
       return segs[segs.length - 1].layer;
-    };
-
-    // ---------- PALETTE HELPERS ----------
-    const getPal = () => {
-      const p = PAL[state.palette] || PAL[0];
-      return {
-        name: p[0],
-        bg: p[1],
-        flower: p[2],
-        stem: p[3],
-        line: p[4],
-        text: p[5],
-        C: { red: p[2], blue: p[3], line: p[4], text: p[5], vein: p[1] }
-      };
     };
 
     // ---------- LAYOUT & TYPOGRAPHY ----------
@@ -904,11 +1080,26 @@
     };
 
     const grow = (r, E, nid, p, o) => {
+      const isElectric = state.theme === 'electric';
       const tip = o.tip || (r() < p.roseP ? 'rose' : r() < 0.45 ? 'fan' : r() < 0.6 ? 'leaf' : 'curl');
-      let P_pts = o.pts || vine(o.base, o.dir, o.len, (0.35 + r() * 0.45) * p.curvy, 1 + r() * 1.6, r() * 6.28, (r() - 0.5) * 1.2, 40);
+
+      let P_pts;
+      if (o.pts) {
+        P_pts = o.pts;
+      } else if (isElectric) {
+        // Electricity: alternate between lightning branches and PCB circuit traces
+        P_pts = r() < 0.65 ?
+          lightning(r, o.base, o.dir, o.len || 0.8) :
+          pcbTrace(r, o.base, o.dir, o.len || 0.8);
+      } else {
+        // Garden: smooth wavy vines
+        P_pts = vine(o.base, o.dir, o.len, (0.35 + r() * 0.45) * p.curvy, 1 + r() * 1.6, r() * 6.28, (r() - 0.5) * 1.2, 40);
+      }
+
       if (tip === 'curl') P_pts = curl(P_pts, r() < 0.5 ? -1 : 1, 0.05 + r() * 0.05);
       const segs = weave(r, o.layer0 != null ? o.layer0 : (r() < 0.5 ? 0 : 1));
-      const dur = Math.max(320, (o.len || 0.8) * 620);
+      const dur = isElectric ? Math.max(180, (o.len || 0.8) * 380) : Math.max(320, (o.len || 0.8) * 620);
+
       const thorns = []; const nt = Math.floor(r() * 2.5);
       for (let i = 0; i < nt; i++) thorns.push({ u: 0.15 + r() * 0.65, s: r() < 0.5 ? -1 : 1 });
       E.push({ t: 'stem', id: nid(), pts: P_pts, segs, d0: o.d0, dur, w: o.depth ? 0.82 : 1, thorns });
@@ -917,7 +1108,18 @@
       let sd = r() < 0.5 ? -1 : 1;
       for (let i = 0; i < nl; i++) {
         const u = 0.25 + r() * 0.6, [q, a] = at(P_pts, u); sd = -sd;
-        E.push({ t: 'leaf', id: nid(), x: q[0], y: q[1], a: a + sd * (0.55 + r() * 0.5), L: (0.14 + r() * 0.2) * (o.depth ? 0.8 : 1), bend: (r() - 0.5) * 1.2, layer: layerAt(segs, u), d0: o.d0 + dur * u });
+        E.push({
+          t: 'leaf',
+          id: nid(),
+          x: q[0],
+          y: q[1],
+          a: a + sd * (isElectric ? (r() < 0.5 ? Math.PI / 2 : Math.PI / 4) : (0.55 + r() * 0.5)),
+          L: (0.14 + r() * 0.2) * (o.depth ? 0.8 : 1),
+          bend: (r() - 0.5) * 1.2,
+          layer: layerAt(segs, u),
+          d0: o.d0 + dur * u,
+          kind: isElectric ? (r() < 0.4 ? 'via' : r() < 0.7 ? 'smd' : 'spark') : 'leaf'
+        });
       }
 
       const [tp, ta] = at(P_pts, 1), td = o.d0 + dur * 0.8, tl = layerAt(segs, 1);
@@ -928,18 +1130,27 @@
         E.push({ t: 'rose', id: nid(), x: tp[0], y: tp[1], R, rot: (r() - 0.5) * 1.0, ph1: r() * 6.28, ph2: r() * 6.28, turns: 1.8 + r() * 1, layer, d0: td });
         if (r() < 0.2) {
           const oo = ta + (r() < 0.5 ? 1 : -1) * 1.3;
-          E.push({ t: 'rose', id: nid(), x: tp[0] + Math.cos(oo) * R * 1.4, y: tp[1] + Math.sin(oo) * R * 1.4, R: R * (0.6 + r() * 0.3), rot: (r() - 0.5) * 1.2, ph1: r() * 6.28, ph2: r() * 6.28, turns: 1.8 + r(), layer, d0: td + 120 });
+          E.push({ t: 'rose', id: nid(), x: tp[0] + Math.cos(oo) * R * 1.4, y: tp[1] + Math.sin(oo) * R * 1.4, R: R * (0.6 + r() * 0.3), rot: (r() - 0.5) * 1.2, ph1: r() * 6.28, ph2: r() * 6.28, turns: 1.8 + r(), layer, d0: td + (isElectric ? 60 : 120) });
         }
       } else if (tip === 'fan') {
-        const spread = 0.6 + r() * 0.3;
-        for (let j = 0; j < 2; j++) E.push({ t: 'leaf', id: nid(), x: tp[0], y: tp[1], a: ta + (j - 0.5) * spread, L: 0.2 + r() * 0.2, bend: (j - 0.5) * 0.8, layer: tl, d0: td + j * 60 });
+        const spread = isElectric ? Math.PI / 2 : 0.6 + r() * 0.3;
+        for (let j = 0; j < 2; j++) {
+          E.push({ t: 'leaf', id: nid(), x: tp[0], y: tp[1], a: ta + (j - 0.5) * spread, L: 0.2 + r() * 0.2, bend: (j - 0.5) * 0.8, layer: tl, d0: td + j * (isElectric ? 30 : 60), kind: isElectric ? 'via' : 'leaf' });
+        }
       } else if (tip === 'leaf') {
-        E.push({ t: 'leaf', id: nid(), x: tp[0], y: tp[1], a: ta + (r() - 0.5) * 0.3, L: 0.16 + r() * 0.16, bend: (r() - 0.5), layer: tl, d0: td });
+        E.push({ t: 'leaf', id: nid(), x: tp[0], y: tp[1], a: ta + (r() - 0.5) * 0.3, L: 0.16 + r() * 0.16, bend: (r() - 0.5), layer: tl, d0: td, kind: isElectric ? 'smd' : 'leaf' });
       }
 
       if (!o.depth && r() < 0.3) {
         const u = 0.35 + r() * 0.35, [q, a] = at(P_pts, u);
-        grow(r, E, nid, p, { base: q, dir: a + (r() < 0.5 ? -1 : 1) * (0.7 + r() * 0.4), len: (o.len || 0.8) * (0.35 + r() * 0.2), d0: o.d0 + dur * u, depth: 1, layer0: layerAt(segs, u) });
+        grow(r, E, nid, p, {
+          base: q,
+          dir: a + (r() < 0.5 ? -1 : 1) * (isElectric ? Math.PI / 3 : (0.7 + r() * 0.4)),
+          len: (o.len || 0.8) * (0.35 + r() * 0.2),
+          d0: o.d0 + dur * u,
+          depth: 1,
+          layer0: layerAt(segs, u)
+        });
       }
       return P_pts;
     };
@@ -994,13 +1205,69 @@
     };
 
     const thorn = (B, P_pts, u, s, S) => {
-      const [p, a] = at(P_pts, u), d = a + s * 2.3, L = S * 0.045;
-      B.stroke([p, [p[0] + Math.cos(d) * L, p[1] + Math.sin(d) * L]], cc.blue, S * 0.022);
+      const [p, a] = at(P_pts, u);
+      if (state.theme === 'electric') {
+        // High-voltage corona needle / spark prong
+        const d = a + s * (Math.PI / 2), L = S * 0.055;
+        B.stroke([p, [p[0] + Math.cos(d) * L, p[1] + Math.sin(d) * L]], cc.line, S * 0.02);
+      } else {
+        const d = a + s * 2.3, L = S * 0.045;
+        B.stroke([p, [p[0] + Math.cos(d) * L, p[1] + Math.sin(d) * L]], cc.blue, S * 0.022);
+      }
     };
 
-    const leaf = (B, bx, by, a, L, bend) => {
+    const leaf = (B, bx, by, a, L, bend, kind) => {
       if (L < 0.5) return;
       const ca = Math.cos(a), sa = Math.sin(a), px = -sa, py = ca;
+
+      if (state.theme === 'electric') {
+        // Electronics Component: Via solder pad or SMD chip
+        if (kind === 'via') {
+          // Circular solder via pad
+          const r_pad = Math.max(2, L * 0.45);
+          const pts = [];
+          for (let i = 0; i <= 16; i++) {
+            const th = i / 16 * Math.PI * 2;
+            pts.push([bx + Math.cos(th) * r_pad, by + Math.sin(th) * r_pad]);
+          }
+          B.fill(pts, cc.blue);
+          // Inner drill hole
+          const hole = [];
+          for (let i = 0; i <= 12; i++) {
+            const th = i / 12 * Math.PI * 2;
+            hole.push([bx + Math.cos(th) * (r_pad * 0.45), by + Math.sin(th) * (r_pad * 0.45)]);
+          }
+          B.fill(hole, cc.vein);
+        } else if (kind === 'smd') {
+          // SMD micro-capacitor / resistor rectangle
+          const hw = L * 0.6, hh = L * 0.28;
+          const corners = [
+            [bx - hw * ca - hh * px, by - hw * sa - hh * py],
+            [bx + hw * ca - hh * px, by + hw * sa - hh * py],
+            [bx + hw * ca + hh * px, by + hw * sa + hh * py],
+            [bx - hw * ca + hh * px, by - hw * sa + hh * py]
+          ];
+          B.fill(corners, cc.blue);
+          // Terminal cap highlight
+          B.stroke([
+            [bx - hw * 0.7 * ca, by - hw * 0.7 * sa],
+            [bx + hw * 0.7 * ca, by + hw * 0.7 * sa]
+          ], cc.line, Math.max(1, L * 0.15));
+        } else {
+          // Sharp corona spark fork
+          B.stroke([
+            [bx, by],
+            [bx + ca * L * 0.8 + px * L * 0.4, by + sa * L * 0.8 + py * L * 0.4]
+          ], cc.line, Math.max(1, L * 0.1));
+          B.stroke([
+            [bx, by],
+            [bx + ca * L * 0.8 - px * L * 0.4, by + sa * L * 0.8 - py * L * 0.4]
+          ], cc.line, Math.max(1, L * 0.1));
+        }
+        return;
+      }
+
+      // Garden Leaf
       const ax_fn = u => { const b = Math.sin(Math.PI * u) * bend * 0.15 * L; return [bx + ca * u * L + px * b, by + sa * u * L + py * b]; };
       const hw = u => L * 0.18 * Math.sin(Math.PI * Math.pow(u, 0.8));
       const N = 12, s1 = [], s2 = [];
@@ -1018,6 +1285,7 @@
       }
     };
 
+    // Terminal flower / Plasma spark
     const rose = (B, cx_pos, cy_pos, R, rot, e, a, tl) => {
       const cr = Math.cos(rot), sr = Math.sin(rot);
       const tm = tl ? Math.hypot(tl[0], tl[1]) : 0, ux = tm ? tl[0] / tm : 0, uy = tm ? tl[1] / tm : 0, sq = -0.28 * tm;
@@ -1031,6 +1299,55 @@
         return [cx_pos + dx, cy_pos + dy];
       };
 
+      if (state.theme === 'electric') {
+        // High-Voltage Plasma Spark / Tesla Orb Terminal
+        const s = spr(a / 1000, 10, 18);
+        if (s <= 0.001) return;
+        const curR = R * s;
+
+        // 1. Concentric discharge glow rings
+        for (let layer = 3; layer >= 1; layer--) {
+          const rad = curR * (0.35 + layer * 0.22);
+          const pts = [];
+          const numPts = 18;
+          for (let k = 0; k < numPts; k++) {
+            const th = k / numPts * Math.PI * 2;
+            const flicker = 1 + 0.15 * Math.sin(th * 6 + a * 0.02 + e.ph1) * (layer === 3 ? 1.5 : 1);
+            pts.push(T(Math.cos(th) * rad * flicker, Math.sin(th) * rad * flicker));
+          }
+          if (layer === 1) {
+            B.fill(pts, cc.red);
+          } else {
+            strokeRange(B, [...pts, pts[0]], 0, 1, layer === 2 ? cc.line : cc.blue, Math.max(1, curR * 0.06));
+          }
+        }
+
+        // 2. High-voltage arc prongs shooting outward
+        const numProngs = 8;
+        for (let i = 0; i < numProngs; i++) {
+          const pAngle = i / numProngs * Math.PI * 2 + (a * 0.002);
+          const prongLen = curR * (0.8 + 0.45 * Math.sin(pAngle * 3 + e.ph2));
+          const pMid = curR * 0.5;
+          const zig = (i % 2 === 0 ? 1 : -1) * (curR * 0.15);
+          const arcPts = [
+            T(0, 0),
+            T(Math.cos(pAngle + 0.2) * pMid + Math.sin(pAngle) * zig, Math.sin(pAngle + 0.2) * pMid - Math.cos(pAngle) * zig),
+            T(Math.cos(pAngle) * prongLen, Math.sin(pAngle) * prongLen)
+          ];
+          strokeRange(B, arcPts, 0, 1, cc.line, Math.max(1, curR * 0.04));
+        }
+
+        // 3. Ultra-bright central plasma nucleus
+        const nucleus = [];
+        for (let k = 0; k < 12; k++) {
+          const th = k / 12 * Math.PI * 2;
+          nucleus.push(T(Math.cos(th) * curR * 0.22, Math.sin(th) * curR * 0.22));
+        }
+        B.fill(nucleus, cc.text);
+        return;
+      }
+
+      // Garden Rose: 6 Layered Petals
       const P_petals = [
         [0, -0.36, 0.56, 0.54, 0, 0, 0],
         [-0.5, -0.06, 0.6, 0.6, -0.35, 0, 0],
@@ -1077,7 +1394,7 @@
       }
     };
 
-    // ---------- BUTTERFLIES & VISITOR ----------
+    // ---------- VISITOR ENTITIES ----------
     const spawnFly = (clickX, clickY) => {
       if (flies.length >= 6) {
         const o = flies.find(f => f.st !== 'leave');
@@ -1112,6 +1429,7 @@
       f.ey = f.y - H * 0.3;
     };
 
+    // Butterfly (Garden)
     const butterfly = (B, x, y, s, ang, o, colors) => {
       const ca = Math.cos(ang), sa = Math.sin(ang);
       const T = (px, py) => [x + (px * ca - py * sa) * s, y + (px * sa + py * ca) * s];
@@ -1138,6 +1456,41 @@
       const lw = Math.max(0.8, s * 0.05);
       B.stroke([T(0, -0.42), T(-0.14, -0.72), T(-0.24, -0.86)], colors.blue, lw);
       B.stroke([T(0, -0.42), T(0.14, -0.72), T(0.24, -0.86)], colors.blue, lw);
+    };
+
+    // Ball Lightning / Plasma Orb (Electricity)
+    const ballLightning = (B, x, y, s, ang, o, colors) => {
+      // 1. Orbital spark rings
+      const numRings = 2;
+      for (let j = 0; j < numRings; j++) {
+        const r_ang = ang * 2 + j * (Math.PI / 2);
+        const rx = s * 0.85, ry = s * 0.35;
+        const pts = [];
+        for (let k = 0; k <= 16; k++) {
+          const th = k / 16 * Math.PI * 2;
+          const px = Math.cos(th) * rx, py = Math.sin(th) * ry;
+          pts.push([
+            x + px * Math.cos(r_ang) - py * Math.sin(r_ang),
+            y + px * Math.sin(r_ang) + py * Math.cos(r_ang)
+          ]);
+        }
+        B.stroke(pts, colors.line, Math.max(1, s * 0.07));
+      }
+      // 2. Pulsing energy plasma nucleus
+      const core = [];
+      const coreR = s * (0.35 + 0.15 * o);
+      for (let k = 0; k < 14; k++) {
+        const th = k / 14 * Math.PI * 2;
+        core.push([x + Math.cos(th) * coreR, y + Math.sin(th) * coreR]);
+      }
+      B.fill(core, colors.red);
+      // Bright white central dot
+      const dot = [];
+      for (let k = 0; k < 10; k++) {
+        const th = k / 10 * Math.PI * 2;
+        dot.push([x + Math.cos(th) * coreR * 0.4, y + Math.sin(th) * coreR * 0.4]);
+      }
+      B.fill(dot, colors.text);
     };
 
     const drawFlies = (B, now, colors) => {
@@ -1177,9 +1530,52 @@
           if (f.st === 'fly' && d < 5) { f.st = 'sit'; f.ph = 0; }
           if (f.st === 'leave' && (f.x < -60 || f.x > W + 60 || f.y < -60)) return false;
         }
-        butterfly(B, f.x, f.y, f.sz, f.ang, f.open, colors);
+
+        if (state.theme === 'electric') {
+          ballLightning(B, f.x, f.y, f.sz * 1.1, f.ang + t * 4, f.open, colors);
+        } else {
+          butterfly(B, f.x, f.y, f.sz, f.ang, f.open, colors);
+        }
         return true;
       });
+    };
+
+    // Interactive electric arc leaping to pointer
+    const drawInteractiveArc = (B, now, colors) => {
+      if (state.theme !== 'electric' || mx == null) return;
+      // Find closest alive letter
+      const act = letters.filter(l => !l.dead && l.ch !== ' ');
+      if (!act.length) return;
+      let closest = null, minDist = 1e9;
+      for (const l of act) {
+        const d = Math.hypot(l.x - mx, (l.y - Sd * 0.4) - my);
+        if (d < minDist) { minDist = d; closest = l; }
+      }
+      if (closest && minDist < 360 && minDist > 10) {
+        const pts = [[closest.x, closest.y - Sd * 0.4]];
+        const steps = 12;
+        let cx_arc = closest.x, cy_arc = closest.y - Sd * 0.4;
+        const dx = (mx - cx_arc) / steps, dy = (my - cy_arc) / steps;
+        for (let i = 1; i < steps; i++) {
+          const u = i / steps;
+          const perpX = -dy, perpY = dx;
+          const jitter = (h(now * 0.01 + i * 7.3) * 2 - 1) * 16 * Math.sin(u * Math.PI);
+          cx_arc += dx;
+          cy_arc += dy;
+          pts.push([cx_arc + perpX * 0.2 + jitter, cy_arc + perpY * 0.2 + jitter]);
+        }
+        pts.push([mx, my]);
+        B.stroke(pts, colors.line, Math.max(1.2, Sd * 0.025));
+
+        // Touchpoint spark ring
+        const spark = [];
+        for (let k = 0; k < 8; k++) {
+          const th = k / 8 * Math.PI * 2;
+          const r_s = 4 + 3 * Math.sin(now * 0.03 + k);
+          spark.push([mx + Math.cos(th) * r_s, my + Math.sin(th) * r_s]);
+        }
+        B.fill(spark, colors.red);
+      }
     };
 
     // ---------- POINTER TRACKING & FACING ----------
@@ -1253,7 +1649,7 @@
       if (e.t === 'leaf') {
         const sc = spr((age - e.d0) / 1000, 7, 15) * kk; if (sc <= 0) return;
         const p = wx_fn(e.x, e.y);
-        leaf(B, p[0], p[1], e.a + j[2] + rw, e.L * S * sc, e.bend);
+        leaf(B, p[0], p[1], e.a + j[2] + rw, e.L * S * sc, e.bend, e.kind);
       } else if (e.t === 'rose') {
         const a = age - e.d0; if (a < 0 || kk <= 0.001) return;
         const p = wx_fn(e.x, e.y), tl = st.face ? faceTurn(e, p[0], p[1]) : null;
@@ -1283,7 +1679,8 @@
           c[1] += (ty_lean - c[1]) * 0.07;
         }
       }
-      const f = st.boil ? Math.floor(now / 120) : 0, amp = st.boil ? Math.max(0.8, S * 0.01) : 0;
+      const f = st.boil ? Math.floor(now / (state.theme === 'electric' ? 70 : 120)) : 0;
+      const amp = st.boil ? Math.max(0.8, S * 0.01) : 0;
       const kd = l => l.dead ? 1 - eo((now - l.dead) / st.wither) : 1;
 
       const drawLayer = layer => {
@@ -1323,13 +1720,14 @@
         boil: state.boil ?? true,
         recoil: state.recoil ?? 20,
         speed: 1,
-        wither: 260,
+        wither: state.theme === 'electric' ? 180 : 260,
         face: true
       };
       renderGarden(B, now, st);
       drawFlies(B, now, st.C);
+      drawInteractiveArc(B, now, st.C);
 
-      // Dropped gift roses from peers / double-tap
+      // Dropped gift nodes / double-tap
       if (caret && gifts && gifts.length) {
         const LIFE = 60000;
         gifts = gifts.filter(gf => now - gf.t0 < LIFE);
@@ -1344,7 +1742,7 @@
       // Blinking typing caret
       if (caret) {
         const S = Sd;
-        const on = now - lastKey < 500 || Math.floor(now / 530) % 2 === 0;
+        const on = now - lastKey < 500 || Math.floor(now / (state.theme === 'electric' ? 380 : 530)) % 2 === 0;
         const hf = eo((now - t0) / 600);
         if (on && hf > 0) {
           const h_bar = 0.8 * S * hf, w_bar = Math.max(2, S * 0.03);
@@ -1354,7 +1752,10 @@
     };
 
     // ---------- POSTER ANIMATION ENGINE ----------
-    const getPreset = () => PRESETS.find(p => p.id === state.preset) || PRESETS[0];
+    const getPreset = () => {
+      const list = getPresetsList();
+      return list.find(p => p.id === state.preset) || list[0];
+    };
 
     const buildPoster = () => {
       const pr = getPreset(), text = (state.text || '').slice(0, 40) || ' ';
@@ -1458,7 +1859,12 @@
         o = burst ? 0.2 + 0.8 * Math.abs(Math.cos(t * 9)) : 0.3 + 0.1 * Math.sin(t * 3);
         ang = 0;
       }
-      butterfly(B, p_pos[0], p_pos[1], sz, ang, o, colors);
+
+      if (state.theme === 'electric') {
+        ballLightning(B, p_pos[0], p_pos[1], sz * 1.2, ang + t * 4, o, colors);
+      } else {
+        butterfly(B, p_pos[0], p_pos[1], sz, ang, o, colors);
+      }
     };
 
     const bars = (B, P_info, st, spread, hf) => {
@@ -1711,10 +2117,9 @@
       let bc = null;
       try {
         bc = new BroadcastChannel('tg-live');
-      } catch (err) {
-        // BroadcastChannel unsupported or restricted
-        return;
-      }
+      } catch (err) {}
+      if (!bc) return;
+
       const rosterMap = new Map();
       const publish = () => {
         const now = Date.now(), out = {};
@@ -1764,7 +2169,8 @@
         const r = roster[id];
         if (r && (r.n !== p.n || r.c !== p.c)) peerStyle(p, r);
       }
-      gardenerCountEl.textContent = n > 1 ? `${n} gardeners here` : '';
+      const unitLabel = state.theme === 'electric' ? 'nodes connected' : 'gardeners here';
+      gardenerCountEl.textContent = n > 1 ? `${n} ${unitLabel}` : '';
     };
 
     const livePeer = d => {
@@ -1861,7 +2267,7 @@
     const savePNG = () => {
       paint(performance.now(), false);
       mainCanvas.toBlob(blob => {
-        if (blob) downloadBlob(blob, 'garden.png');
+        if (blob) downloadBlob(blob, `${state.theme}-export.png`);
       });
       refocus();
     };
@@ -1898,7 +2304,7 @@
       };
       renderGarden(B, performance.now(), st);
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${n(W)}" height="${n(H)}" viewBox="0 0 ${n(W)} ${n(H)}"><defs><style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&amp;display=swap');</style></defs><rect width="100%" height="100%" fill="${palObj.bg}"/>${parts.join('')}</svg>`;
-      downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), 'garden.svg');
+      downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), `${state.theme}-export.svg`);
       refocus();
     };
 
@@ -1959,7 +2365,7 @@
 
     const getFilename = () => {
       const txt = (state.text || 'loop').trim().replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 24);
-      return `garden-${txt}-${state.preset}`;
+      return `${state.theme}-${txt}-${state.preset}`;
     };
 
     const exportVideo = async () => {
@@ -2036,7 +2442,8 @@
 
       // Update palette swatches in bottom bar
       paletteBar.innerHTML = '';
-      PAL.forEach((p, idx) => {
+      const list = getPalettesList();
+      list.forEach((p, idx) => {
         const btn = document.createElement('button');
         btn.className = `swatch-btn ${idx === state.palette ? 'active' : ''}`;
         btn.title = p[0];
@@ -2055,7 +2462,7 @@
 
       // Update palette cards in poster view
       posterPaletteGrid.innerHTML = '';
-      PAL.forEach((p, idx) => {
+      list.forEach((p, idx) => {
         const card = document.createElement('button');
         card.className = `palette-card ${idx === state.palette ? 'active' : ''}`;
         card.innerHTML = `
@@ -2077,7 +2484,8 @@
 
     const updatePresetUI = () => {
       presetGrid.innerHTML = '';
-      PRESETS.forEach(pr => {
+      const list = getPresetsList();
+      list.forEach(pr => {
         const card = document.createElement('button');
         card.className = `preset-card ${pr.id === state.preset ? 'active' : ''}`;
         card.innerHTML = `
@@ -2091,6 +2499,54 @@
         };
         presetGrid.appendChild(card);
       });
+    };
+
+    const updateHintsUI = () => {
+      if (state.theme === 'electric') {
+        hintType.textContent = 'type to charge';
+        hintTap.textContent = 'tap to charge';
+        hintCut.textContent = 'space sparks';
+        hintWither.textContent = 'backspace shorts';
+        hintWitherC.textContent = '⌫ shorts';
+        hintClear.textContent = 'enter discharges';
+        hintClearC.textContent = 'return discharges';
+      } else {
+        hintType.textContent = 'type to grow';
+        hintTap.textContent = 'tap to type';
+        hintCut.textContent = 'space cuts';
+        hintWither.textContent = 'backspace withers';
+        hintWitherC.textContent = '⌫ withers';
+        hintClear.textContent = 'enter clears';
+        hintClearC.textContent = 'return clears';
+      }
+    };
+
+    const setTheme = theme => {
+      state.theme = theme;
+      state.palette = 0;
+      state.preset = 'breathe';
+
+      if (theme === 'electric') {
+        btnThemeGarden.className = 'theme-btn';
+        btnThemeElectric.className = 'theme-btn active electric';
+        document.title = 'Electric Garden — High Voltage Type';
+      } else {
+        btnThemeGarden.className = 'theme-btn active garden';
+        btnThemeElectric.className = 'theme-btn';
+        document.title = 'Type Garden';
+      }
+
+      updateHintsUI();
+      updatePaletteUI();
+      updatePresetUI();
+
+      // Regenerate all current letters in the new visual theme
+      letters.forEach(l => {
+        if (l.ch !== ' ') gen(l);
+      });
+      layout();
+      if (state.mode === 'poster') buildPoster();
+      refocus();
     };
 
     const setMode = mode => {
@@ -2123,6 +2579,8 @@
     };
 
     // Event Bindings
+    btnThemeGarden.onclick = () => setTheme('garden');
+    btnThemeElectric.onclick = () => setTheme('electric');
     btnModeType.onclick = () => setMode('type');
     btnModePoster.onclick = () => setMode('poster');
 
@@ -2160,7 +2618,7 @@
       const isCanvas = e.target === mainCanvas;
       if (isCanvas) {
         spawnFly(e.clientX, e.clientY);
-        // Double-click/tap leaves gift rose
+        // Double-click/tap leaves gift
         const now = performance.now(), lp = lastTap;
         lastTap = { t: now, x: e.clientX, y: e.clientY };
         if (lp && now - lp.t < 340 && Math.hypot(e.clientX - lp.x, e.clientY - lp.y) < 40 && now - lastPlant > 1800) {
@@ -2216,6 +2674,7 @@
     if (!vmime) btnExportVideo.disabled = true;
 
     // ---------- INITIALIZATION ----------
+    updateHintsUI();
     updatePaletteUI();
     updatePresetUI();
     hiddenInput.value = SENT;
@@ -2232,8 +2691,7 @@
       }).catch(() => {});
     }
 
-    // Spawn an initial welcoming word "bloom" smoothly so the page is immediately breathtaking,
-    // or let the user type! Let's initialize with "bloom" so upon first render the garden grows right away!
+    // Initial word
     const initialWord = "bloom";
     const initT = performance.now();
     for (let i = 0; i < initialWord.length; i++) {
