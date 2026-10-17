@@ -124,7 +124,7 @@
     .theme-btn.active.electric {
       background: #FFE600;
       color: #000000;
-      box-shadow: 0 0 16px rgba(255, 230, 0, 0.6);
+      box-shadow: 0 0 16px rgba(255, 230, 0, 0.5);
     }
 
     /* Top Right: Mode Switcher */
@@ -442,7 +442,6 @@
       display: block;
       border: 1px solid #1E1E1E;
       background: #000;
-      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
     }
 
     /* Peer cursors */
@@ -539,8 +538,8 @@
 
     <!-- Concept / Theme Selector (Garden vs Electricity) -->
     <div data-tg="themes">
-      <button class="theme-btn active garden" id="btnThemeGarden">🌸 Garden</button>
-      <button class="theme-btn" id="btnThemeElectric">⚡ Electricity</button>
+      <button class="theme-btn garden" id="btnThemeGarden">🌸 Garden</button>
+      <button class="theme-btn active electric" id="btnThemeElectric">⚡ Electricidad</button>
     </div>
 
     <!-- Mode Selector -->
@@ -552,13 +551,13 @@
     <!-- Type Bar (Bottom UI) -->
     <div data-tg="bar" id="typeBar">
       <div data-tg="hints" id="hintsContainer">
-        <span data-tg="fine" id="hintType">type to grow</span>
-        <span data-tg="coarse" id="hintTap">tap to type</span>
-        <span id="hintCut">space cuts</span>
-        <span data-tg="fine" id="hintWither">backspace withers</span>
-        <span data-tg="coarse" id="hintWitherC">⌫ withers</span>
-        <span data-tg="fine" id="hintClear">enter clears</span>
-        <span data-tg="coarse" id="hintClearC">return clears</span>
+        <span data-tg="fine" id="hintType">type to spark</span>
+        <span data-tg="coarse" id="hintTap">tap to spark</span>
+        <span id="hintCut">space discharges</span>
+        <span data-tg="fine" id="hintWither">backspace snaps</span>
+        <span data-tg="coarse" id="hintWitherC">⌫ snaps</span>
+        <span data-tg="fine" id="hintClear">enter grounds</span>
+        <span data-tg="coarse" id="hintClearC">return grounds</span>
         <span data-tg="count" id="gardenerCount"></span>
       </div>
       <div data-tg="ctrls">
@@ -634,34 +633,33 @@
       { id: 'visit',   label: 'Visitor',        sub: 'Butterfly drops by · 7s', T: 7000 }
     ];
 
-    // ---------- PALETTES & PRESETS: ELECTRICITY (FOCUSED ON YELLOW LIGHTNING SPARKS) ----------
+    // ---------- PALETTES & PRESETS: ELECTRICITY (CLEAN PURE YELLOW LINES, NO SHADOWS) ----------
     const PAL_ELECTRIC = [
-      ['Electric Gold', '#000000', '#FFE600', '#FFAA00', '#FFFFFF', '#FFFFFF'],
-      ['Sunfire Arc',   '#050505', '#FFD000', '#FF7700', '#FFFBE0', '#FFFFFF'],
-      ['Neon Amber',    '#040301', '#FFB800', '#FF4400', '#FFE49E', '#FFFFFF'],
-      ['Pure Lightning','#000000', '#FFFFFF', '#FFDD00', '#FFF275', '#FFFFFF'],
-      ['Plasma Blue',   '#020814', '#00E5FF', '#0066FF', '#C7F8FF', '#FFFFFF']
+      ['Amarillo Eléctrico', '#000000', '#FFE600', '#FFE600', '#FFFFFF', '#FFFFFF'],
+      ['Amarillo Neón',      '#000000', '#FAFF00', '#FAFF00', '#FFFFFF', '#FFFFFF'],
+      ['Dorado Suave',       '#000000', '#FFD700', '#FFD700', '#FFFFFF', '#FFFFFF'],
+      ['Ámbar Eléctrico',    '#000000', '#FFB800', '#FFB800', '#FFFFFF', '#FFFFFF']
     ];
 
     const PRESETS_ELECTRIC = [
-      { id: 'breathe', label: 'Electric Crackle', sub: 'Active lightning arc · 3s', T: 3000 },
-      { id: 'grow',    label: 'Thunder Strike',   sub: 'Burst & dissipate · 6s',    T: 6000 },
-      { id: 'typed',   label: 'Conduction',       sub: 'Sparks along typing · 5s',  T: 5000 },
-      { id: 'wind',    label: 'Voltage Surge',    sub: 'Lightning sweep · 4s',      T: 4000 },
-      { id: 'reach',   label: 'Plasma Orb',       sub: 'Sparks seek orb · 6s',      T: 6000 },
-      { id: 'scatter', label: 'Spark Storm',      sub: 'Chaotic rapid sparks · 6s', T: 6000 },
-      { id: 'visit',   label: 'Ball Lightning',   sub: 'Spark wisp wanders · 7s',   T: 7000 }
+      { id: 'breathe', label: 'Líneas Eléctricas', sub: 'Crecimiento y desvanecimiento · 3s', T: 3000 },
+      { id: 'grow',    label: 'Rayo Suave',        sub: 'Brote controlado · 6s',             T: 6000 },
+      { id: 'typed',   label: 'Conducción',        sub: 'Líneas al escribir · 5s',           T: 5000 },
+      { id: 'wind',    label: 'Onda Eléctrica',    sub: 'Barrido de rayos · 4s',             T: 4000 },
+      { id: 'reach',   label: 'Atracción',         sub: 'Líneas hacia el centro · 6s',       T: 6000 },
+      { id: 'scatter', label: 'Chispas Lentas',    sub: 'Brote disperso · 6s',               T: 6000 },
+      { id: 'visit',   label: 'Chispa Guía',       sub: 'Chispa viajera · 7s',               T: 7000 }
     ];
 
     const FLOWERS = ['iris', 'fern', 'poppy', 'tulip', 'violet', 'clover', 'daisy', 'lilac', 'aster', 'peony'];
     const NODES_NAMES = ['spark', 'bolt', 'flash', 'arc', 'tesla', 'voltage', 'current', 'plasma'];
-    const TINTS = ['#FF8A00', '#FFE600', '#FFB800', '#FFAA00', '#FFD23F', '#FFFFFF'];
+    const TINTS = ['#FFE600', '#FAFF00', '#FFD700', '#FFB800', '#FFFFFF'];
     const SENT = String.fromCharCode(0x200b);
     const FONT_FAMILY = '"Playfair Display", Georgia, serif';
 
     // ---------- APP STATE ----------
     const state = {
-      theme: 'electric', // Start in electric to give the user immediate feedback!
+      theme: 'electric', // Start in electric mode
       mode: 'type',      // 'type' | 'poster'
       preset: 'breathe',
       palette: 0,
@@ -847,24 +845,20 @@
         ctx.font = `700 ${S}px ${FONT_FAMILY}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'alphabetic';
-        if (state.theme === 'electric') {
-          ctx.shadowColor = '#FFB800';
-          ctx.shadowBlur = 12;
-        }
+        ctx.shadowBlur = 0; // Clean, no shadow!
         ctx.fillStyle = col;
         ctx.fillText(ch, x, y);
-        if (state.theme === 'electric') ctx.shadowBlur = 0;
       }
     });
 
-    // ---------- REALISTIC FRACTAL LIGHTNING GENERATOR ----------
-    // Generates genuine jagged lightning bolts like the reference picture
-    const createLightningBolt = (r, p0, p1, displace = 25, roughness = 0.55, branches = 2) => {
+    // ---------- CONTROLLED FRACTAL LIGHTNING LINES ----------
+    // Pure, clean, controlled yellow lightning generator
+    const createLightningBolt = (r, p0, p1, displace = 20, roughness = 0.52, branches = 1) => {
       const dx = p1[0] - p0[0], dy = p1[1] - p0[1];
       const dist = Math.hypot(dx, dy);
       if (dist < 4) return { main: [p0, p1], forks: [] };
 
-      // Midpoint displacement recursive iteration
+      // Midpoint displacement with 3-4 clean subdivisions
       const segments = [[p0, p1]];
       const maxIters = 4;
       let curDisp = displace;
@@ -886,79 +880,64 @@
       const mainPath = [segments[0][0]];
       for (const s of segments) mainPath.push(s[1]);
 
-      // Sub-branches splitting off
+      // Controlled sub-branch (clean and elegant, 1 branch)
       const forks = [];
       if (branches > 0 && mainPath.length > 6) {
-        const numForks = 1 + Math.floor(r() * branches);
-        for (let f = 0; f < numForks; f++) {
-          const forkIdx = Math.floor(0.25 * mainPath.length + r() * 0.55 * mainPath.length);
-          const forkOrigin = mainPath[forkIdx];
-          const baseAngle = Math.atan2(dy, dx) + (r() < 0.5 ? 1 : -1) * (0.5 + r() * 0.5);
-          const forkLen = dist * (0.35 + r() * 0.4);
-          const forkEnd = [
-            forkOrigin[0] + Math.cos(baseAngle) * forkLen,
-            forkOrigin[1] + Math.sin(baseAngle) * forkLen
-          ];
-          const subBolt = createLightningBolt(r, forkOrigin, forkEnd, displace * 0.5, roughness, 0);
-          forks.push(subBolt.main);
-        }
+        const forkIdx = Math.floor(0.35 * mainPath.length + r() * 0.35 * mainPath.length);
+        const forkOrigin = mainPath[forkIdx];
+        const baseAngle = Math.atan2(dy, dx) + (r() < 0.5 ? 1 : -1) * (0.45 + r() * 0.35);
+        const forkLen = dist * (0.35 + r() * 0.25);
+        const forkEnd = [
+          forkOrigin[0] + Math.cos(baseAngle) * forkLen,
+          forkOrigin[1] + Math.sin(baseAngle) * forkLen
+        ];
+        const subBolt = createLightningBolt(r, forkOrigin, forkEnd, displace * 0.45, roughness, 0);
+        forks.push(subBolt.main);
       }
 
       return { main: mainPath, forks };
     };
 
-    // Draw single electric lightning bolt with amber glow + yellow body + white hot core
-    const renderLightningBolt = (ctx, pts, growFr, alpha, amberColor, yellowColor, S) => {
+    // Render clean pure yellow line with smooth controlled progress and fade
+    const renderLightningBolt = (ctx, pts, growFr, alpha, yellowColor, S) => {
       if (pts.length < 2 || growFr <= 0 || alpha <= 0) return;
       const count = Math.max(2, Math.floor(pts.length * growFr));
       const sub = pts.slice(0, count);
 
       ctx.save();
       ctx.globalAlpha = alpha;
+      ctx.shadowBlur = 0; // Pure clean line, no dark/black shadow!
 
-      const drawStroke = (col, width, blur) => {
-        ctx.beginPath();
-        ctx.moveTo(sub[0][0], sub[0][1]);
-        for (let i = 1; i < sub.length; i++) ctx.lineTo(sub[i][0], sub[i][1]);
-        ctx.strokeStyle = col;
-        ctx.lineWidth = width;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'miter';
-        if (blur > 0) {
-          ctx.shadowColor = col;
-          ctx.shadowBlur = blur;
-        } else {
-          ctx.shadowBlur = 0;
-        }
-        ctx.stroke();
-      };
+      ctx.beginPath();
+      ctx.moveTo(sub[0][0], sub[0][1]);
+      for (let i = 1; i < sub.length; i++) ctx.lineTo(sub[i][0], sub[i][1]);
 
-      // 1. Broad outer amber aura (soft glow)
-      drawStroke(amberColor, S * 0.045, 18);
-      // 2. High-intensity electric yellow beam
-      drawStroke(yellowColor, S * 0.022, 8);
-      // 3. Crisp white-hot filament center
-      drawStroke('#FFFFFF', Math.max(1, S * 0.009), 0);
+      ctx.strokeStyle = yellowColor || '#FFE600';
+      ctx.lineWidth = Math.max(1.8, S * 0.022);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
 
       ctx.restore();
     };
 
-    // Helper to spawn an electric spark for a letter
+    // Spawns a controlled, graceful yellow lightning line for a letter
     const spawnSparkForLetter = (l, now, S, options = {}) => {
       if (!l.sparks) l.sparks = [];
       const r = rng(Math.floor(Math.random() * 1e7));
       const w = mw(l.ch);
       const startX = options.x != null ? options.x : (r() - 0.5) * w * 0.7;
-      const startY = options.y != null ? options.y : -0.1 - r() * 0.55;
+      const startY = options.y != null ? options.y : -0.15 - r() * 0.45;
 
-      const dir = options.dir != null ? options.dir : -Math.PI / 2 + (r() - 0.5) * 1.8;
-      const len = options.len != null ? options.len : (0.45 + r() * 0.65) * S;
+      const dir = options.dir != null ? options.dir : -Math.PI / 2 + (r() - 0.5) * 1.5;
+      const len = options.len != null ? options.len : (0.45 + r() * 0.55) * S;
 
       const p0 = [l.x + startX * S, l.y + startY * S];
       const p1 = [p0[0] + Math.cos(dir) * len, p0[1] + Math.sin(dir) * len];
 
-      const bolt = createLightningBolt(r, p0, p1, len * 0.35, 0.58, 2);
-      const lifespan = 200 + Math.floor(r() * 180); // 200ms - 380ms
+      const bolt = createLightningBolt(r, p0, p1, len * 0.28, 0.55, 1);
+      // Controlled, graceful lifespan (1.4s to 2.2s)
+      const lifespan = 1400 + Math.floor(r() * 800);
 
       l.sparks.push({
         id: uid++,
@@ -1191,17 +1170,18 @@
 
     const gen = l => {
       if (state.theme === 'electric') {
-        // Electricity: Initialize sparks for letter!
+        // Electricity: Clean, controlled yellow lightning lines
         l.els = [];
         l.endEls = null;
         l.tend = null;
         l.sparks = [];
         const now = performance.now();
-        const numInitialSparks = 3 + Math.floor(Math.random() * 3);
-        for (let i = 0; i < numInitialSparks; i++) {
-          spawnSparkForLetter(l, now + i * 25, Sd || 100);
+        // Spawn 1 or 2 elegant, controlled lines
+        spawnSparkForLetter(l, now, Sd || 100);
+        if (Math.random() < 0.6) {
+          spawnSparkForLetter(l, now + 140, Sd || 100);
         }
-        l.nextSparkT = now + 80 + Math.random() * 120;
+        l.nextSparkT = now + 1200 + Math.random() * 1000;
         return;
       }
 
@@ -1232,10 +1212,10 @@
 
     const genEnd = (l, rel) => {
       if (state.theme === 'electric') {
-        // Electric burst on space!
+        // Controlled electric spark burst on space!
         const now = performance.now();
-        for (let i = 0; i < 6; i++) {
-          spawnSparkForLetter(l, now + i * 20, Sd || 100, { len: (0.7 + Math.random() * 0.7) * (Sd || 100) });
+        for (let i = 0; i < 3; i++) {
+          spawnSparkForLetter(l, now + i * 80, Sd || 100, { len: (0.6 + Math.random() * 0.5) * (Sd || 100) });
         }
         return;
       }
@@ -1412,24 +1392,18 @@
       B.stroke([T(0, -0.42), T(0.14, -0.72), T(0.24, -0.86)], colors.blue, lw);
     };
 
-    // Yellow Ball Lightning spark wisp (Electricity visitor)
+    // Clean controlled yellow spark traveler (Electricity mode)
     const electricSparkWisp = (ctx, x, y, s, now) => {
       ctx.save();
-      // Orbiting lightning arcs
-      const r_wisp = s * 0.8;
+      ctx.shadowBlur = 0; // Pure clean line, no shadow!
+      const r_wisp = s * 0.55;
       const pts = [];
-      for (let i = 0; i <= 8; i++) {
-        const th = i / 8 * Math.PI * 2;
-        const rad = r_wisp * (0.7 + 0.3 * Math.sin(now * 0.02 + i * 3));
+      for (let i = 0; i <= 6; i++) {
+        const th = i / 6 * Math.PI * 2;
+        const rad = r_wisp * (0.8 + 0.2 * Math.sin(now * 0.005 + i));
         pts.push([x + Math.cos(th) * rad, y + Math.sin(th) * rad]);
       }
-      renderLightningBolt(ctx, pts, 1, 0.9, '#FF9900', '#FFE600', s * 1.5);
-
-      // Bright nucleus
-      ctx.fillStyle = '#FFFFFF';
-      ctx.beginPath();
-      ctx.arc(x, y, s * 0.25, 0, Math.PI * 2);
-      ctx.fill();
+      renderLightningBolt(ctx, pts, 1, 0.9, '#FFE600', s);
       ctx.restore();
     };
 
@@ -1481,7 +1455,7 @@
       });
     };
 
-    // Yellow interactive lightning arc leaping to mouse cursor
+    // Controlled yellow lightning line reaching to cursor
     const drawInteractiveArc = (ctx, now, colors) => {
       if (state.theme !== 'electric' || mx == null) return;
       const act = letters.filter(l => !l.dead && l.ch !== ' ');
@@ -1491,23 +1465,14 @@
         const d = Math.hypot(l.x - mx, (l.y - Sd * 0.4) - my);
         if (d < minDist) { minDist = d; closest = l; }
       }
-      if (closest && minDist < 340 && minDist > 10) {
-        const r_arc = rng(Math.floor(now / 50));
-        const bolt = createLightningBolt(r_arc, [closest.x, closest.y - Sd * 0.4], [mx, my], minDist * 0.22, 0.6, 1);
-        renderLightningBolt(ctx, bolt.main, 1, 0.95, colors.stem, colors.flower, Sd);
+      if (closest && minDist < 280 && minDist > 15) {
+        const r_arc = rng(Math.floor(now / 180)); // Controlled update interval
+        const bolt = createLightningBolt(r_arc, [closest.x, closest.y - Sd * 0.4], [mx, my], minDist * 0.2, 0.55, 1);
+        const yellowCol = colors.flower || '#FFE600';
+        renderLightningBolt(ctx, bolt.main, 1, 0.9, yellowCol, Sd);
         for (const fork of bolt.forks) {
-          renderLightningBolt(ctx, fork, 1, 0.7, colors.stem, colors.flower, Sd * 0.7);
+          renderLightningBolt(ctx, fork, 1, 0.75, yellowCol, Sd * 0.7);
         }
-
-        // Contact spark ring at cursor
-        ctx.save();
-        ctx.shadowColor = colors.flower;
-        ctx.shadowBlur = 12;
-        ctx.fillStyle = '#FFFFFF';
-        ctx.beginPath();
-        ctx.arc(mx, my, 4 + 2 * Math.sin(now * 0.05), 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
       }
     };
 
@@ -1593,33 +1558,37 @@
       }
     };
 
-    // Render Electric Lightning Sparks for a letter (GROWS RAPIDLY THEN DISSIPATES LIKE REAL SPARKS)
+    // Render Clean Controlled Yellow Lightning Lines for Letter
+    // Smooth growth -> hold -> graceful fade out
     const renderElectricSparksForLetter = (ctx, l, now, S, colors) => {
       if (!l.sparks) l.sparks = [];
 
-      // Remove dead sparks that finished their lifespan
+      // Clean up finished sparks
       l.sparks = l.sparks.filter(sp => (now - sp.t0) < sp.dur);
 
-      // Continuous ambient spark crackling: spawn a new spark every ~80-160ms per alive letter
+      // Controlled, calm ambient generation (only 1-2 active lines per letter at a time)
       if (!l.dead && now > (l.nextSparkT || 0)) {
-        spawnSparkForLetter(l, now, S);
-        l.nextSparkT = now + 90 + Math.random() * 160;
+        if (l.sparks.length < 2) {
+          spawnSparkForLetter(l, now, S);
+        }
+        l.nextSparkT = now + 1400 + Math.random() * 1200;
       }
 
-      // Draw all currently active sparks
+      // Draw all current controlled yellow lines
       for (const sp of l.sparks) {
         const age = now - sp.t0;
-        const growthPeriod = sp.dur * 0.3; // Shoots forward in first 30% of lifespan
-        const growFr = Math.min(1, age / growthPeriod);
-        // Fades away in the remaining 70% of lifespan
-        const alpha = age < growthPeriod ? 1 : Math.max(0, 1 - (age - growthPeriod) / (sp.dur - growthPeriod));
+        const growDuration = sp.dur * 0.45; // Smooth controlled growth over 45% of lifespan
+        const growFr = eo(Math.min(1, age / growDuration));
+        // Hold between 45% and 75%, then fade out gently in the last 25%
+        const alpha = age < sp.dur * 0.75 ? 1 : Math.max(0, 1 - (age - sp.dur * 0.75) / (sp.dur * 0.25));
 
         if (alpha <= 0 || growFr <= 0) continue;
 
-        renderLightningBolt(ctx, sp.main, growFr, alpha, colors.stem, colors.flower, S);
+        const yellowCol = colors.flower || '#FFE600';
+        renderLightningBolt(ctx, sp.main, growFr, alpha, yellowCol, S);
         if (sp.forks) {
           for (const fork of sp.forks) {
-            renderLightningBolt(ctx, fork, growFr, alpha * 0.8, colors.stem, colors.flower, S * 0.7);
+            renderLightningBolt(ctx, fork, growFr, alpha * 0.9, yellowCol, S * 0.75);
           }
         }
       }
@@ -1630,15 +1599,15 @@
       const S = st.S, L = st.letters, act = L.filter(l => !l.dead), sp = st.speed || 1;
       cc = st.C; _now = now; if (st.face) perch = [];
 
-      // ---------- THEME: ELECTRICITY (PURE YELLOW CRACKLING LIGHTNING) ----------
+      // ---------- THEME: ELECTRICITY (PURE YELLOW LINES, CONTROLLED) ----------
       if (state.theme === 'electric') {
-        // Draw the text
+        // 1. Draw text cleanly (no shadow)
         for (const l of L) {
           if (l.ch !== ' ' && (st.textAll || !l.dead)) {
             B.text(l.ch, l.x, l.y, S, st.C.text);
           }
         }
-        // Draw the lightning sparks that grow and dissipate
+        // 2. Draw controlled yellow lightning lines
         for (const l of L) {
           if (l.ch !== ' ') {
             renderElectricSparksForLetter(currentCtx, l, now, S, st.C);
@@ -1705,7 +1674,7 @@
         boil: state.boil ?? true,
         recoil: state.recoil ?? 20,
         speed: 1,
-        wither: state.theme === 'electric' ? 160 : 260,
+        wither: state.theme === 'electric' ? 240 : 260,
         face: true
       };
 
@@ -1721,15 +1690,14 @@
           const age = now - gf.t0, w = 1 - eo((age - (LIFE - 2200)) / 2200);
           g.globalAlpha = Math.max(0, w);
           if (state.theme === 'electric') {
-            // High-voltage lightning burst ring
             const r_circ = Sd * 0.25;
             const pts = [];
-            for (let i = 0; i <= 10; i++) {
-              const th = i / 10 * Math.PI * 2;
-              const rad = r_circ * (0.8 + 0.3 * Math.sin(now * 0.03 + i));
+            for (let i = 0; i <= 8; i++) {
+              const th = i / 8 * Math.PI * 2;
+              const rad = r_circ * (0.85 + 0.15 * Math.sin(now * 0.006 + i));
               pts.push([gf.x * W + Math.cos(th) * rad, gf.y * H + Math.sin(th) * rad]);
             }
-            renderLightningBolt(g, pts, 1, w, st.C.stem, st.C.flower, Sd);
+            renderLightningBolt(g, pts, 1, w, st.C.flower, Sd);
           } else {
             rose(B, gf.x * W, gf.y * H + (1 - w) * Sd * 0.3, Sd * 0.24 * (0.65 + 0.35 * w), gf.rot + (1 - w) * 0.6, gf.e, age, null);
           }
@@ -1740,7 +1708,7 @@
       // Blinking typing caret
       if (caret) {
         const S = Sd;
-        const on = now - lastKey < 500 || Math.floor(now / (state.theme === 'electric' ? 320 : 530)) % 2 === 0;
+        const on = now - lastKey < 500 || Math.floor(now / 530) % 2 === 0;
         const hf = eo((now - t0) / 600);
         if (on && hf > 0) {
           const h_bar = 0.8 * S * hf, w_bar = Math.max(2, S * 0.03);
@@ -1965,10 +1933,9 @@
       renderGarden(B, tt, st, pg);
       if (bars_val != null) bars(B, P, st, bars_val, 1);
       if (P.preset === 'reach') {
-        const [lx, ly] = _light, r_light = P.S * 0.09;
+        const [lx, ly] = _light, r_light = P.S * 0.06;
         ctx.save();
-        ctx.shadowColor = st.C.flower;
-        ctx.shadowBlur = 16;
+        ctx.shadowBlur = 0;
         ctx.fillStyle = st.C.flower;
         ctx.beginPath();
         ctx.arc(lx, ly, r_light, 0, Math.PI * 2);
@@ -2018,12 +1985,6 @@
       const A = letters.filter(l => !l.dead), last = A[A.length - 1];
       if (!last) return;
       last.dead = now;
-      if (state.theme === 'electric') {
-        // Fast dying spark burst on backspace
-        for (let i = 0; i < 4; i++) {
-          spawnSparkForLetter(last, now + i * 15, Sd || 100);
-        }
-      }
       const pv = A[A.length - 2];
       if (pv && pv.ch !== ' ') { pv.cut = null; pv.endEls = null; pv.tb = now; }
       layout();
@@ -2514,12 +2475,12 @@
       state.preset = 'breathe';
 
       if (theme === 'electric') {
-        btnThemeGarden.className = 'theme-btn';
+        btnThemeGarden.className = 'theme-btn garden';
         btnThemeElectric.className = 'theme-btn active electric';
-        document.title = 'Electric Spark Type';
+        document.title = 'Líneas Eléctricas';
       } else {
         btnThemeGarden.className = 'theme-btn active garden';
-        btnThemeElectric.className = 'theme-btn';
+        btnThemeElectric.className = 'theme-btn electric';
         document.title = 'Type Garden';
       }
 
@@ -2661,7 +2622,7 @@
     if (!vmime) btnExportVideo.disabled = true;
 
     // ---------- INITIALIZATION ----------
-    setTheme('electric'); // Start in electric theme as user requested!
+    setTheme('electric'); // Start in electric theme
     hiddenInput.value = SENT;
     resize();
     liveInit();
