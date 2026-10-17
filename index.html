@@ -122,9 +122,9 @@
       box-shadow: 0 0 14px rgba(255, 255, 255, 0.25);
     }
     .theme-btn.active.electric {
-      background: #00F0FF;
+      background: #FFE600;
       color: #000000;
-      box-shadow: 0 0 16px rgba(0, 240, 255, 0.5);
+      box-shadow: 0 0 16px rgba(255, 230, 0, 0.6);
     }
 
     /* Top Right: Mode Switcher */
@@ -578,7 +578,7 @@
 
         <div style="display:flex; flex-direction:column; gap:10px">
           <div class="section-title">Words</div>
-          <input class="poster-input" id="posterTextInput" value="voltage" spellcheck="false">
+          <input class="poster-input" id="posterTextInput" value="electric" spellcheck="false">
           <button class="action-btn" id="btnReshuffle" style="align-self: flex-start;">Regenerate</button>
         </div>
 
@@ -634,38 +634,35 @@
       { id: 'visit',   label: 'Visitor',        sub: 'Butterfly drops by · 7s', T: 7000 }
     ];
 
-    // ---------- PALETTES & PRESETS: ELECTRICITY ----------
+    // ---------- PALETTES & PRESETS: ELECTRICITY (FOCUSED ON YELLOW LIGHTNING SPARKS) ----------
     const PAL_ELECTRIC = [
-      ['Arc Neon',      '#04040A', '#00F0FF', '#7928CA', '#B983FF', '#FFFFFF'],
-      ['High Voltage',  '#060608', '#FFE600', '#FF3300', '#FFAA00', '#FFFFFF'],
-      ['Matrix PCB',    '#020A04', '#39FF14', '#005C1E', '#88FF77', '#E8FFE8'],
-      ['Plasma Violet', '#0A0012', '#FF007F', '#00D4FF', '#FF80BF', '#FFFFFF'],
-      ['Biolight Blue', '#020C18', '#00E5FF', '#0048BA', '#80F2FF', '#FFFFFF'],
-      ['Solar Flare',   '#110400', '#FF6B00', '#FFC400', '#FFE082', '#FFF8E7'],
-      ['Cryo White',    '#020508', '#FFFFFF', '#475569', '#94A3B8', '#FFFFFF'],
-      ['Dark Copper',   '#0E0B08', '#FF9E4A', '#4A3525', '#D4A373', '#FDF6ED']
+      ['Electric Gold', '#000000', '#FFE600', '#FFAA00', '#FFFFFF', '#FFFFFF'],
+      ['Sunfire Arc',   '#050505', '#FFD000', '#FF7700', '#FFFBE0', '#FFFFFF'],
+      ['Neon Amber',    '#040301', '#FFB800', '#FF4400', '#FFE49E', '#FFFFFF'],
+      ['Pure Lightning','#000000', '#FFFFFF', '#FFDD00', '#FFF275', '#FFFFFF'],
+      ['Plasma Blue',   '#020814', '#00E5FF', '#0066FF', '#C7F8FF', '#FFFFFF']
     ];
 
     const PRESETS_ELECTRIC = [
-      { id: 'breathe', label: 'AC Oscillation', sub: 'Sine wave cycle · 3s',    T: 3000 },
-      { id: 'grow',    label: 'Overcharge',     sub: 'Build up, discharge · 6s', T: 6000 },
-      { id: 'typed',   label: 'Digital Pulse',  sub: 'Trace conduction · 5s',    T: 5000 },
-      { id: 'wind',    label: 'Voltage Surge',  sub: 'EMP wave sweeps · 4s',     T: 4000 },
-      { id: 'reach',   label: 'Attraction',     sub: 'Arcs seek electrode · 6s', T: 6000 },
-      { id: 'scatter', label: 'Spark Storm',    sub: 'Chaotic static arcs · 6s', T: 6000 },
-      { id: 'visit',   label: 'Ball Lightning', sub: 'Plasma wisp roams · 7s',   T: 7000 }
+      { id: 'breathe', label: 'Electric Crackle', sub: 'Active lightning arc · 3s', T: 3000 },
+      { id: 'grow',    label: 'Thunder Strike',   sub: 'Burst & dissipate · 6s',    T: 6000 },
+      { id: 'typed',   label: 'Conduction',       sub: 'Sparks along typing · 5s',  T: 5000 },
+      { id: 'wind',    label: 'Voltage Surge',    sub: 'Lightning sweep · 4s',      T: 4000 },
+      { id: 'reach',   label: 'Plasma Orb',       sub: 'Sparks seek orb · 6s',      T: 6000 },
+      { id: 'scatter', label: 'Spark Storm',      sub: 'Chaotic rapid sparks · 6s', T: 6000 },
+      { id: 'visit',   label: 'Ball Lightning',   sub: 'Spark wisp wanders · 7s',   T: 7000 }
     ];
 
     const FLOWERS = ['iris', 'fern', 'poppy', 'tulip', 'violet', 'clover', 'daisy', 'lilac', 'aster', 'peony'];
-    const NODES_NAMES = ['tesla', 'volta', 'plasma', 'flux', 'ampere', 'ohm', 'farad', 'joule', 'hertz', 'spark'];
-    const TINTS = ['#FF8A00', '#E63CFF', '#7FD18B', '#9FB4FF', '#FFB7C5', '#FFE2B8', '#2FB8A6', '#00F0FF', '#FFE600'];
+    const NODES_NAMES = ['spark', 'bolt', 'flash', 'arc', 'tesla', 'voltage', 'current', 'plasma'];
+    const TINTS = ['#FF8A00', '#FFE600', '#FFB800', '#FFAA00', '#FFD23F', '#FFFFFF'];
     const SENT = String.fromCharCode(0x200b);
     const FONT_FAMILY = '"Playfair Display", Georgia, serif';
 
     // ---------- APP STATE ----------
     const state = {
-      theme: 'garden', // 'garden' | 'electric'
-      mode: 'type',    // 'type' | 'poster'
+      theme: 'electric', // Start in electric to give the user immediate feedback!
+      mode: 'type',      // 'type' | 'poster'
       preset: 'breathe',
       palette: 0,
       text: 'bloom',
@@ -758,7 +755,6 @@
     const vmime = typeof MediaRecorder !== 'undefined' ?
       ['video/mp4;codecs=avc1.42E01E', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find(m => MediaRecorder.isTypeSupported(m)) : null;
 
-    // Helper to get active palette list and presets
     const getPalettesList = () => state.theme === 'electric' ? PAL_ELECTRIC : PAL_GARDEN;
     const getPresetsList = () => state.theme === 'electric' ? PRESETS_ELECTRIC : PRESETS_GARDEN;
 
@@ -807,40 +803,31 @@
     };
     const jit = (id, f, amp) => {
       if (!amp) return [0, 0, 0];
-      const mult = state.theme === 'electric' ? 1.6 : 1;
       return [
-        (h(id * 1.37 + f * 7.13) * 2 - 1) * amp * mult,
-        (h(id * 2.71 + f * 3.11) * 2 - 1) * amp * mult,
-        (h(id * 5.3 + f * 1.7) * 2 - 1) * 0.035 * mult
+        (h(id * 1.37 + f * 7.13) * 2 - 1) * amp,
+        (h(id * 2.71 + f * 3.11) * 2 - 1) * amp,
+        (h(id * 5.3 + f * 1.7) * 2 - 1) * 0.035
       ];
     };
 
     const path = (ctx, p, closed) => {
       const n = p.length; if (n < 2) return;
-      if (state.theme === 'electric') {
-        // High-tech angular / crisp polygonal line
-        ctx.moveTo(p[0][0], p[0][1]);
-        for (let i = 1; i < n; i++) ctx.lineTo(p[i][0], p[i][1]);
-        if (closed) ctx.closePath();
-      } else {
-        // Organic smooth curve
-        const m = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-        if (closed) {
-          const s = m(p[n - 1], p[0]);
-          ctx.moveTo(s[0], s[1]);
-          for (let i = 0; i < n; i++) {
-            const q = m(p[i], p[(i + 1) % n]);
-            ctx.quadraticCurveTo(p[i][0], p[i][1], q[0], q[1]);
-          }
-          ctx.closePath();
-        } else {
-          ctx.moveTo(p[0][0], p[0][1]);
-          for (let i = 1; i < n - 1; i++) {
-            const q = m(p[i], p[i + 1]);
-            ctx.quadraticCurveTo(p[i][0], p[i][1], q[0], q[1]);
-          }
-          ctx.lineTo(p[n - 1][0], p[n - 1][1]);
+      const m = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+      if (closed) {
+        const s = m(p[n - 1], p[0]);
+        ctx.moveTo(s[0], s[1]);
+        for (let i = 0; i < n; i++) {
+          const q = m(p[i], p[(i + 1) % n]);
+          ctx.quadraticCurveTo(p[i][0], p[i][1], q[0], q[1]);
         }
+        ctx.closePath();
+      } else {
+        ctx.moveTo(p[0][0], p[0][1]);
+        for (let i = 1; i < n - 1; i++) {
+          const q = m(p[i], p[i + 1]);
+          ctx.quadraticCurveTo(p[i][0], p[i][1], q[0], q[1]);
+        }
+        ctx.lineTo(p[n - 1][0], p[n - 1][1]);
       }
     };
 
@@ -851,14 +838,9 @@
         path(ctx, p, false);
         ctx.strokeStyle = col;
         ctx.lineWidth = width;
-        ctx.lineCap = state.theme === 'electric' ? 'square' : 'round';
-        ctx.lineJoin = state.theme === 'electric' ? 'miter' : 'round';
-        if (state.theme === 'electric') {
-          ctx.shadowColor = col;
-          ctx.shadowBlur = 8;
-        }
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
         ctx.stroke();
-        if (state.theme === 'electric') ctx.shadowBlur = 0;
       },
       rect: (x, y, w, h_val, col) => { ctx.fillStyle = col; ctx.fillRect(x, y, w, h_val); },
       text: (ch, x, y, S, col) => {
@@ -866,8 +848,8 @@
         ctx.textAlign = 'center';
         ctx.textBaseline = 'alphabetic';
         if (state.theme === 'electric') {
-          ctx.shadowColor = col;
-          ctx.shadowBlur = 10;
+          ctx.shadowColor = '#FFB800';
+          ctx.shadowBlur = 12;
         }
         ctx.fillStyle = col;
         ctx.fillText(ch, x, y);
@@ -875,8 +857,119 @@
       }
     });
 
-    // ---------- PATH GENERATORS ----------
-    // 1. Organic Vine (Garden)
+    // ---------- REALISTIC FRACTAL LIGHTNING GENERATOR ----------
+    // Generates genuine jagged lightning bolts like the reference picture
+    const createLightningBolt = (r, p0, p1, displace = 25, roughness = 0.55, branches = 2) => {
+      const dx = p1[0] - p0[0], dy = p1[1] - p0[1];
+      const dist = Math.hypot(dx, dy);
+      if (dist < 4) return { main: [p0, p1], forks: [] };
+
+      // Midpoint displacement recursive iteration
+      const segments = [[p0, p1]];
+      const maxIters = 4;
+      let curDisp = displace;
+
+      for (let it = 0; it < maxIters; it++) {
+        const nextSegs = [];
+        for (const [a, b] of segments) {
+          const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+          const nx = -(b[1] - a[1]), ny = (b[0] - a[0]);
+          const segDist = Math.hypot(nx, ny) || 1;
+          const offset = (r() - 0.5) * curDisp;
+          const mid = [mx + (nx / segDist) * offset, my + (ny / segDist) * offset];
+          nextSegs.push([a, mid], [mid, b]);
+        }
+        segments.splice(0, segments.length, ...nextSegs);
+        curDisp *= roughness;
+      }
+
+      const mainPath = [segments[0][0]];
+      for (const s of segments) mainPath.push(s[1]);
+
+      // Sub-branches splitting off
+      const forks = [];
+      if (branches > 0 && mainPath.length > 6) {
+        const numForks = 1 + Math.floor(r() * branches);
+        for (let f = 0; f < numForks; f++) {
+          const forkIdx = Math.floor(0.25 * mainPath.length + r() * 0.55 * mainPath.length);
+          const forkOrigin = mainPath[forkIdx];
+          const baseAngle = Math.atan2(dy, dx) + (r() < 0.5 ? 1 : -1) * (0.5 + r() * 0.5);
+          const forkLen = dist * (0.35 + r() * 0.4);
+          const forkEnd = [
+            forkOrigin[0] + Math.cos(baseAngle) * forkLen,
+            forkOrigin[1] + Math.sin(baseAngle) * forkLen
+          ];
+          const subBolt = createLightningBolt(r, forkOrigin, forkEnd, displace * 0.5, roughness, 0);
+          forks.push(subBolt.main);
+        }
+      }
+
+      return { main: mainPath, forks };
+    };
+
+    // Draw single electric lightning bolt with amber glow + yellow body + white hot core
+    const renderLightningBolt = (ctx, pts, growFr, alpha, amberColor, yellowColor, S) => {
+      if (pts.length < 2 || growFr <= 0 || alpha <= 0) return;
+      const count = Math.max(2, Math.floor(pts.length * growFr));
+      const sub = pts.slice(0, count);
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const drawStroke = (col, width, blur) => {
+        ctx.beginPath();
+        ctx.moveTo(sub[0][0], sub[0][1]);
+        for (let i = 1; i < sub.length; i++) ctx.lineTo(sub[i][0], sub[i][1]);
+        ctx.strokeStyle = col;
+        ctx.lineWidth = width;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'miter';
+        if (blur > 0) {
+          ctx.shadowColor = col;
+          ctx.shadowBlur = blur;
+        } else {
+          ctx.shadowBlur = 0;
+        }
+        ctx.stroke();
+      };
+
+      // 1. Broad outer amber aura (soft glow)
+      drawStroke(amberColor, S * 0.045, 18);
+      // 2. High-intensity electric yellow beam
+      drawStroke(yellowColor, S * 0.022, 8);
+      // 3. Crisp white-hot filament center
+      drawStroke('#FFFFFF', Math.max(1, S * 0.009), 0);
+
+      ctx.restore();
+    };
+
+    // Helper to spawn an electric spark for a letter
+    const spawnSparkForLetter = (l, now, S, options = {}) => {
+      if (!l.sparks) l.sparks = [];
+      const r = rng(Math.floor(Math.random() * 1e7));
+      const w = mw(l.ch);
+      const startX = options.x != null ? options.x : (r() - 0.5) * w * 0.7;
+      const startY = options.y != null ? options.y : -0.1 - r() * 0.55;
+
+      const dir = options.dir != null ? options.dir : -Math.PI / 2 + (r() - 0.5) * 1.8;
+      const len = options.len != null ? options.len : (0.45 + r() * 0.65) * S;
+
+      const p0 = [l.x + startX * S, l.y + startY * S];
+      const p1 = [p0[0] + Math.cos(dir) * len, p0[1] + Math.sin(dir) * len];
+
+      const bolt = createLightningBolt(r, p0, p1, len * 0.35, 0.58, 2);
+      const lifespan = 200 + Math.floor(r() * 180); // 200ms - 380ms
+
+      l.sparks.push({
+        id: uid++,
+        main: bolt.main,
+        forks: bolt.forks,
+        t0: now,
+        dur: lifespan
+      });
+    };
+
+    // ---------- ORGANIC GARDEN GENERATOR (GARDEN THEME ONLY) ----------
     const vine = (base, dir, len, amp, waves, ph, bend, n = 40) => {
       const P_pts = [[base[0], base[1]]], step = len / n;
       let x = base[0], y = base[1];
@@ -884,50 +977,6 @@
         const u = i / n, a = dir + bend * u + amp * Math.sin(u * Math.PI * waves + ph) * Math.min(1, u * 3);
         x += Math.cos(a) * step;
         y += Math.sin(a) * step;
-        P_pts.push([x, y]);
-      }
-      return P_pts;
-    };
-
-    // 2. Lightning Bolt / Jagged Arc (Electricity)
-    const lightning = (r, base, dir, len, n = 28) => {
-      const P_pts = [[base[0], base[1]]];
-      let x = base[0], y = base[1];
-      const step = len / n;
-      let curDir = dir;
-      for (let i = 1; i <= n; i++) {
-        const u = i / n;
-        const jitterAngle = (r() - 0.5) * 1.5;
-        curDir = dir + jitterAngle * (0.8 + 0.4 * Math.sin(u * 10));
-        const segLen = step * (0.7 + r() * 0.6);
-        x += Math.cos(curDir) * segLen;
-        y += Math.sin(curDir) * segLen;
-        P_pts.push([x, y]);
-      }
-      return P_pts;
-    };
-
-    // 3. PCB Circuit Trace: 45° and 90° Manhattan geometry (Electricity)
-    const pcbTrace = (r, base, dir, len, n = 14) => {
-      const P_pts = [[base[0], base[1]]];
-      let x = base[0], y = base[1];
-      const snapAngles = [-Math.PI/2, -Math.PI/4, 0, Math.PI/4, Math.PI/2, 3*Math.PI/4, Math.PI, -3*Math.PI/4];
-      const snap = a => {
-        let best = snapAngles[0], bd = 1e9;
-        for (const sa of snapAngles) {
-          const d = Math.abs(Math.atan2(Math.sin(a - sa), Math.cos(a - sa)));
-          if (d < bd) { bd = d; best = sa; }
-        }
-        return best;
-      };
-      let curAngle = snap(dir);
-      const step = len / n;
-      for (let i = 1; i <= n; i++) {
-        if (r() < 0.35) {
-          curAngle = snap(curAngle + (r() < 0.5 ? 1 : -1) * (Math.PI / 4));
-        }
-        x += Math.cos(curAngle) * step;
-        y += Math.sin(curAngle) * step;
         P_pts.push([x, y]);
       }
       return P_pts;
@@ -1064,7 +1113,7 @@
       layout(true);
     };
 
-    // ---------- PROCEDURAL GROWTH SYSTEM ----------
+    // ---------- PROCEDURAL GROWTH SYSTEM (GARDEN) ----------
     const wordParams = ws => {
       const r = rng(ws * 7 + 13), dens = state.density ?? 1;
       return {
@@ -1080,25 +1129,11 @@
     };
 
     const grow = (r, E, nid, p, o) => {
-      const isElectric = state.theme === 'electric';
       const tip = o.tip || (r() < p.roseP ? 'rose' : r() < 0.45 ? 'fan' : r() < 0.6 ? 'leaf' : 'curl');
-
-      let P_pts;
-      if (o.pts) {
-        P_pts = o.pts;
-      } else if (isElectric) {
-        // Electricity: alternate between lightning branches and PCB circuit traces
-        P_pts = r() < 0.65 ?
-          lightning(r, o.base, o.dir, o.len || 0.8) :
-          pcbTrace(r, o.base, o.dir, o.len || 0.8);
-      } else {
-        // Garden: smooth wavy vines
-        P_pts = vine(o.base, o.dir, o.len, (0.35 + r() * 0.45) * p.curvy, 1 + r() * 1.6, r() * 6.28, (r() - 0.5) * 1.2, 40);
-      }
-
+      let P_pts = o.pts || vine(o.base, o.dir, o.len, (0.35 + r() * 0.45) * p.curvy, 1 + r() * 1.6, r() * 6.28, (r() - 0.5) * 1.2, 40);
       if (tip === 'curl') P_pts = curl(P_pts, r() < 0.5 ? -1 : 1, 0.05 + r() * 0.05);
       const segs = weave(r, o.layer0 != null ? o.layer0 : (r() < 0.5 ? 0 : 1));
-      const dur = isElectric ? Math.max(180, (o.len || 0.8) * 380) : Math.max(320, (o.len || 0.8) * 620);
+      const dur = Math.max(320, (o.len || 0.8) * 620);
 
       const thorns = []; const nt = Math.floor(r() * 2.5);
       for (let i = 0; i < nt; i++) thorns.push({ u: 0.15 + r() * 0.65, s: r() < 0.5 ? -1 : 1 });
@@ -1113,12 +1148,11 @@
           id: nid(),
           x: q[0],
           y: q[1],
-          a: a + sd * (isElectric ? (r() < 0.5 ? Math.PI / 2 : Math.PI / 4) : (0.55 + r() * 0.5)),
+          a: a + sd * (0.55 + r() * 0.5),
           L: (0.14 + r() * 0.2) * (o.depth ? 0.8 : 1),
           bend: (r() - 0.5) * 1.2,
           layer: layerAt(segs, u),
-          d0: o.d0 + dur * u,
-          kind: isElectric ? (r() < 0.4 ? 'via' : r() < 0.7 ? 'smd' : 'spark') : 'leaf'
+          d0: o.d0 + dur * u
         });
       }
 
@@ -1130,22 +1164,22 @@
         E.push({ t: 'rose', id: nid(), x: tp[0], y: tp[1], R, rot: (r() - 0.5) * 1.0, ph1: r() * 6.28, ph2: r() * 6.28, turns: 1.8 + r() * 1, layer, d0: td });
         if (r() < 0.2) {
           const oo = ta + (r() < 0.5 ? 1 : -1) * 1.3;
-          E.push({ t: 'rose', id: nid(), x: tp[0] + Math.cos(oo) * R * 1.4, y: tp[1] + Math.sin(oo) * R * 1.4, R: R * (0.6 + r() * 0.3), rot: (r() - 0.5) * 1.2, ph1: r() * 6.28, ph2: r() * 6.28, turns: 1.8 + r(), layer, d0: td + (isElectric ? 60 : 120) });
+          E.push({ t: 'rose', id: nid(), x: tp[0] + Math.cos(oo) * R * 1.4, y: tp[1] + Math.sin(oo) * R * 1.4, R: R * (0.6 + r() * 0.3), rot: (r() - 0.5) * 1.2, ph1: r() * 6.28, ph2: r() * 6.28, turns: 1.8 + r(), layer, d0: td + 120 });
         }
       } else if (tip === 'fan') {
-        const spread = isElectric ? Math.PI / 2 : 0.6 + r() * 0.3;
+        const spread = 0.6 + r() * 0.3;
         for (let j = 0; j < 2; j++) {
-          E.push({ t: 'leaf', id: nid(), x: tp[0], y: tp[1], a: ta + (j - 0.5) * spread, L: 0.2 + r() * 0.2, bend: (j - 0.5) * 0.8, layer: tl, d0: td + j * (isElectric ? 30 : 60), kind: isElectric ? 'via' : 'leaf' });
+          E.push({ t: 'leaf', id: nid(), x: tp[0], y: tp[1], a: ta + (j - 0.5) * spread, L: 0.2 + r() * 0.2, bend: (j - 0.5) * 0.8, layer: tl, d0: td + j * 60 });
         }
       } else if (tip === 'leaf') {
-        E.push({ t: 'leaf', id: nid(), x: tp[0], y: tp[1], a: ta + (r() - 0.5) * 0.3, L: 0.16 + r() * 0.16, bend: (r() - 0.5), layer: tl, d0: td, kind: isElectric ? 'smd' : 'leaf' });
+        E.push({ t: 'leaf', id: nid(), x: tp[0], y: tp[1], a: ta + (r() - 0.5) * 0.3, L: 0.16 + r() * 0.16, bend: (r() - 0.5), layer: tl, d0: td });
       }
 
       if (!o.depth && r() < 0.3) {
         const u = 0.35 + r() * 0.35, [q, a] = at(P_pts, u);
         grow(r, E, nid, p, {
           base: q,
-          dir: a + (r() < 0.5 ? -1 : 1) * (isElectric ? Math.PI / 3 : (0.7 + r() * 0.4)),
+          dir: a + (r() < 0.5 ? -1 : 1) * (0.7 + r() * 0.4),
           len: (o.len || 0.8) * (0.35 + r() * 0.2),
           d0: o.d0 + dur * u,
           depth: 1,
@@ -1156,6 +1190,22 @@
     };
 
     const gen = l => {
+      if (state.theme === 'electric') {
+        // Electricity: Initialize sparks for letter!
+        l.els = [];
+        l.endEls = null;
+        l.tend = null;
+        l.sparks = [];
+        const now = performance.now();
+        const numInitialSparks = 3 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < numInitialSparks; i++) {
+          spawnSparkForLetter(l, now + i * 25, Sd || 100);
+        }
+        l.nextSparkT = now + 80 + Math.random() * 120;
+        return;
+      }
+
+      // Garden Mode
       const r = rng((l.ws ^ Math.imul(l.wi + 1, 2654435761)) + Math.floor(rand() * 1e6));
       const p = wordParams(l.ws), E = []; let k0 = 0; const nid = () => l.id * 100 + (k0++);
       const w = mw(l.ch), inX = () => (r() - 0.5) * w * 0.7; p.w = w;
@@ -1181,6 +1231,16 @@
     };
 
     const genEnd = (l, rel) => {
+      if (state.theme === 'electric') {
+        // Electric burst on space!
+        const now = performance.now();
+        for (let i = 0; i < 6; i++) {
+          spawnSparkForLetter(l, now + i * 20, Sd || 100, { len: (0.7 + Math.random() * 0.7) * (Sd || 100) });
+        }
+        return;
+      }
+
+      // Garden End Bloom
       const r = rng(l.ws + l.wi * 31 + Math.floor(rand() * 1e6)), p = wordParams(l.ws), E = [];
       let k0 = 50; const nid = () => l.id * 100 + (k0++);
       const w = mw(l.ch), n = 1 + Math.floor(r() * 2.5); p.w = w;
@@ -1191,7 +1251,7 @@
       l.endEls = E;
     };
 
-    // ---------- DRAWING PRIMITIVES ----------
+    // ---------- GARDEN DRAWING PRIMITIVES ----------
     const strokeRange = (B, P_pts, a, b, col, width) => {
       const n = P_pts.length - 1, ia = a * n, ib = b * n;
       const lerp = t => {
@@ -1206,68 +1266,13 @@
 
     const thorn = (B, P_pts, u, s, S) => {
       const [p, a] = at(P_pts, u);
-      if (state.theme === 'electric') {
-        // High-voltage corona needle / spark prong
-        const d = a + s * (Math.PI / 2), L = S * 0.055;
-        B.stroke([p, [p[0] + Math.cos(d) * L, p[1] + Math.sin(d) * L]], cc.line, S * 0.02);
-      } else {
-        const d = a + s * 2.3, L = S * 0.045;
-        B.stroke([p, [p[0] + Math.cos(d) * L, p[1] + Math.sin(d) * L]], cc.blue, S * 0.022);
-      }
+      const d = a + s * 2.3, L = S * 0.045;
+      B.stroke([p, [p[0] + Math.cos(d) * L, p[1] + Math.sin(d) * L]], cc.blue, S * 0.022);
     };
 
-    const leaf = (B, bx, by, a, L, bend, kind) => {
+    const leaf = (B, bx, by, a, L, bend) => {
       if (L < 0.5) return;
       const ca = Math.cos(a), sa = Math.sin(a), px = -sa, py = ca;
-
-      if (state.theme === 'electric') {
-        // Electronics Component: Via solder pad or SMD chip
-        if (kind === 'via') {
-          // Circular solder via pad
-          const r_pad = Math.max(2, L * 0.45);
-          const pts = [];
-          for (let i = 0; i <= 16; i++) {
-            const th = i / 16 * Math.PI * 2;
-            pts.push([bx + Math.cos(th) * r_pad, by + Math.sin(th) * r_pad]);
-          }
-          B.fill(pts, cc.blue);
-          // Inner drill hole
-          const hole = [];
-          for (let i = 0; i <= 12; i++) {
-            const th = i / 12 * Math.PI * 2;
-            hole.push([bx + Math.cos(th) * (r_pad * 0.45), by + Math.sin(th) * (r_pad * 0.45)]);
-          }
-          B.fill(hole, cc.vein);
-        } else if (kind === 'smd') {
-          // SMD micro-capacitor / resistor rectangle
-          const hw = L * 0.6, hh = L * 0.28;
-          const corners = [
-            [bx - hw * ca - hh * px, by - hw * sa - hh * py],
-            [bx + hw * ca - hh * px, by + hw * sa - hh * py],
-            [bx + hw * ca + hh * px, by + hw * sa + hh * py],
-            [bx - hw * ca + hh * px, by - hw * sa + hh * py]
-          ];
-          B.fill(corners, cc.blue);
-          // Terminal cap highlight
-          B.stroke([
-            [bx - hw * 0.7 * ca, by - hw * 0.7 * sa],
-            [bx + hw * 0.7 * ca, by + hw * 0.7 * sa]
-          ], cc.line, Math.max(1, L * 0.15));
-        } else {
-          // Sharp corona spark fork
-          B.stroke([
-            [bx, by],
-            [bx + ca * L * 0.8 + px * L * 0.4, by + sa * L * 0.8 + py * L * 0.4]
-          ], cc.line, Math.max(1, L * 0.1));
-          B.stroke([
-            [bx, by],
-            [bx + ca * L * 0.8 - px * L * 0.4, by + sa * L * 0.8 - py * L * 0.4]
-          ], cc.line, Math.max(1, L * 0.1));
-        }
-        return;
-      }
-
-      // Garden Leaf
       const ax_fn = u => { const b = Math.sin(Math.PI * u) * bend * 0.15 * L; return [bx + ca * u * L + px * b, by + sa * u * L + py * b]; };
       const hw = u => L * 0.18 * Math.sin(Math.PI * Math.pow(u, 0.8));
       const N = 12, s1 = [], s2 = [];
@@ -1285,7 +1290,6 @@
       }
     };
 
-    // Terminal flower / Plasma spark
     const rose = (B, cx_pos, cy_pos, R, rot, e, a, tl) => {
       const cr = Math.cos(rot), sr = Math.sin(rot);
       const tm = tl ? Math.hypot(tl[0], tl[1]) : 0, ux = tm ? tl[0] / tm : 0, uy = tm ? tl[1] / tm : 0, sq = -0.28 * tm;
@@ -1299,55 +1303,6 @@
         return [cx_pos + dx, cy_pos + dy];
       };
 
-      if (state.theme === 'electric') {
-        // High-Voltage Plasma Spark / Tesla Orb Terminal
-        const s = spr(a / 1000, 10, 18);
-        if (s <= 0.001) return;
-        const curR = R * s;
-
-        // 1. Concentric discharge glow rings
-        for (let layer = 3; layer >= 1; layer--) {
-          const rad = curR * (0.35 + layer * 0.22);
-          const pts = [];
-          const numPts = 18;
-          for (let k = 0; k < numPts; k++) {
-            const th = k / numPts * Math.PI * 2;
-            const flicker = 1 + 0.15 * Math.sin(th * 6 + a * 0.02 + e.ph1) * (layer === 3 ? 1.5 : 1);
-            pts.push(T(Math.cos(th) * rad * flicker, Math.sin(th) * rad * flicker));
-          }
-          if (layer === 1) {
-            B.fill(pts, cc.red);
-          } else {
-            strokeRange(B, [...pts, pts[0]], 0, 1, layer === 2 ? cc.line : cc.blue, Math.max(1, curR * 0.06));
-          }
-        }
-
-        // 2. High-voltage arc prongs shooting outward
-        const numProngs = 8;
-        for (let i = 0; i < numProngs; i++) {
-          const pAngle = i / numProngs * Math.PI * 2 + (a * 0.002);
-          const prongLen = curR * (0.8 + 0.45 * Math.sin(pAngle * 3 + e.ph2));
-          const pMid = curR * 0.5;
-          const zig = (i % 2 === 0 ? 1 : -1) * (curR * 0.15);
-          const arcPts = [
-            T(0, 0),
-            T(Math.cos(pAngle + 0.2) * pMid + Math.sin(pAngle) * zig, Math.sin(pAngle + 0.2) * pMid - Math.cos(pAngle) * zig),
-            T(Math.cos(pAngle) * prongLen, Math.sin(pAngle) * prongLen)
-          ];
-          strokeRange(B, arcPts, 0, 1, cc.line, Math.max(1, curR * 0.04));
-        }
-
-        // 3. Ultra-bright central plasma nucleus
-        const nucleus = [];
-        for (let k = 0; k < 12; k++) {
-          const th = k / 12 * Math.PI * 2;
-          nucleus.push(T(Math.cos(th) * curR * 0.22, Math.sin(th) * curR * 0.22));
-        }
-        B.fill(nucleus, cc.text);
-        return;
-      }
-
-      // Garden Rose: 6 Layered Petals
       const P_petals = [
         [0, -0.36, 0.56, 0.54, 0, 0, 0],
         [-0.5, -0.06, 0.6, 0.6, -0.35, 0, 0],
@@ -1429,7 +1384,6 @@
       f.ey = f.y - H * 0.3;
     };
 
-    // Butterfly (Garden)
     const butterfly = (B, x, y, s, ang, o, colors) => {
       const ca = Math.cos(ang), sa = Math.sin(ang);
       const T = (px, py) => [x + (px * ca - py * sa) * s, y + (px * sa + py * ca) * s];
@@ -1458,39 +1412,25 @@
       B.stroke([T(0, -0.42), T(0.14, -0.72), T(0.24, -0.86)], colors.blue, lw);
     };
 
-    // Ball Lightning / Plasma Orb (Electricity)
-    const ballLightning = (B, x, y, s, ang, o, colors) => {
-      // 1. Orbital spark rings
-      const numRings = 2;
-      for (let j = 0; j < numRings; j++) {
-        const r_ang = ang * 2 + j * (Math.PI / 2);
-        const rx = s * 0.85, ry = s * 0.35;
-        const pts = [];
-        for (let k = 0; k <= 16; k++) {
-          const th = k / 16 * Math.PI * 2;
-          const px = Math.cos(th) * rx, py = Math.sin(th) * ry;
-          pts.push([
-            x + px * Math.cos(r_ang) - py * Math.sin(r_ang),
-            y + px * Math.sin(r_ang) + py * Math.cos(r_ang)
-          ]);
-        }
-        B.stroke(pts, colors.line, Math.max(1, s * 0.07));
+    // Yellow Ball Lightning spark wisp (Electricity visitor)
+    const electricSparkWisp = (ctx, x, y, s, now) => {
+      ctx.save();
+      // Orbiting lightning arcs
+      const r_wisp = s * 0.8;
+      const pts = [];
+      for (let i = 0; i <= 8; i++) {
+        const th = i / 8 * Math.PI * 2;
+        const rad = r_wisp * (0.7 + 0.3 * Math.sin(now * 0.02 + i * 3));
+        pts.push([x + Math.cos(th) * rad, y + Math.sin(th) * rad]);
       }
-      // 2. Pulsing energy plasma nucleus
-      const core = [];
-      const coreR = s * (0.35 + 0.15 * o);
-      for (let k = 0; k < 14; k++) {
-        const th = k / 14 * Math.PI * 2;
-        core.push([x + Math.cos(th) * coreR, y + Math.sin(th) * coreR]);
-      }
-      B.fill(core, colors.red);
-      // Bright white central dot
-      const dot = [];
-      for (let k = 0; k < 10; k++) {
-        const th = k / 10 * Math.PI * 2;
-        dot.push([x + Math.cos(th) * coreR * 0.4, y + Math.sin(th) * coreR * 0.4]);
-      }
-      B.fill(dot, colors.text);
+      renderLightningBolt(ctx, pts, 1, 0.9, '#FF9900', '#FFE600', s * 1.5);
+
+      // Bright nucleus
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.arc(x, y, s * 0.25, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     };
 
     const drawFlies = (B, now, colors) => {
@@ -1532,7 +1472,8 @@
         }
 
         if (state.theme === 'electric') {
-          ballLightning(B, f.x, f.y, f.sz * 1.1, f.ang + t * 4, f.open, colors);
+          const currentCtx = state.mode === 'poster' ? pg : g;
+          electricSparkWisp(currentCtx, f.x, f.y, f.sz, now);
         } else {
           butterfly(B, f.x, f.y, f.sz, f.ang, f.open, colors);
         }
@@ -1540,10 +1481,9 @@
       });
     };
 
-    // Interactive electric arc leaping to pointer
-    const drawInteractiveArc = (B, now, colors) => {
+    // Yellow interactive lightning arc leaping to mouse cursor
+    const drawInteractiveArc = (ctx, now, colors) => {
       if (state.theme !== 'electric' || mx == null) return;
-      // Find closest alive letter
       const act = letters.filter(l => !l.dead && l.ch !== ' ');
       if (!act.length) return;
       let closest = null, minDist = 1e9;
@@ -1551,30 +1491,23 @@
         const d = Math.hypot(l.x - mx, (l.y - Sd * 0.4) - my);
         if (d < minDist) { minDist = d; closest = l; }
       }
-      if (closest && minDist < 360 && minDist > 10) {
-        const pts = [[closest.x, closest.y - Sd * 0.4]];
-        const steps = 12;
-        let cx_arc = closest.x, cy_arc = closest.y - Sd * 0.4;
-        const dx = (mx - cx_arc) / steps, dy = (my - cy_arc) / steps;
-        for (let i = 1; i < steps; i++) {
-          const u = i / steps;
-          const perpX = -dy, perpY = dx;
-          const jitter = (h(now * 0.01 + i * 7.3) * 2 - 1) * 16 * Math.sin(u * Math.PI);
-          cx_arc += dx;
-          cy_arc += dy;
-          pts.push([cx_arc + perpX * 0.2 + jitter, cy_arc + perpY * 0.2 + jitter]);
+      if (closest && minDist < 340 && minDist > 10) {
+        const r_arc = rng(Math.floor(now / 50));
+        const bolt = createLightningBolt(r_arc, [closest.x, closest.y - Sd * 0.4], [mx, my], minDist * 0.22, 0.6, 1);
+        renderLightningBolt(ctx, bolt.main, 1, 0.95, colors.stem, colors.flower, Sd);
+        for (const fork of bolt.forks) {
+          renderLightningBolt(ctx, fork, 1, 0.7, colors.stem, colors.flower, Sd * 0.7);
         }
-        pts.push([mx, my]);
-        B.stroke(pts, colors.line, Math.max(1.2, Sd * 0.025));
 
-        // Touchpoint spark ring
-        const spark = [];
-        for (let k = 0; k < 8; k++) {
-          const th = k / 8 * Math.PI * 2;
-          const r_s = 4 + 3 * Math.sin(now * 0.03 + k);
-          spark.push([mx + Math.cos(th) * r_s, my + Math.sin(th) * r_s]);
-        }
-        B.fill(spark, colors.red);
+        // Contact spark ring at cursor
+        ctx.save();
+        ctx.shadowColor = colors.flower;
+        ctx.shadowBlur = 12;
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(mx, my, 4 + 2 * Math.sin(now * 0.05), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
       }
     };
 
@@ -1649,7 +1582,7 @@
       if (e.t === 'leaf') {
         const sc = spr((age - e.d0) / 1000, 7, 15) * kk; if (sc <= 0) return;
         const p = wx_fn(e.x, e.y);
-        leaf(B, p[0], p[1], e.a + j[2] + rw, e.L * S * sc, e.bend, e.kind);
+        leaf(B, p[0], p[1], e.a + j[2] + rw, e.L * S * sc, e.bend);
       } else if (e.t === 'rose') {
         const a = age - e.d0; if (a < 0 || kk <= 0.001) return;
         const p = wx_fn(e.x, e.y), tl = st.face ? faceTurn(e, p[0], p[1]) : null;
@@ -1660,9 +1593,61 @@
       }
     };
 
-    const renderGarden = (B, now, st) => {
+    // Render Electric Lightning Sparks for a letter (GROWS RAPIDLY THEN DISSIPATES LIKE REAL SPARKS)
+    const renderElectricSparksForLetter = (ctx, l, now, S, colors) => {
+      if (!l.sparks) l.sparks = [];
+
+      // Remove dead sparks that finished their lifespan
+      l.sparks = l.sparks.filter(sp => (now - sp.t0) < sp.dur);
+
+      // Continuous ambient spark crackling: spawn a new spark every ~80-160ms per alive letter
+      if (!l.dead && now > (l.nextSparkT || 0)) {
+        spawnSparkForLetter(l, now, S);
+        l.nextSparkT = now + 90 + Math.random() * 160;
+      }
+
+      // Draw all currently active sparks
+      for (const sp of l.sparks) {
+        const age = now - sp.t0;
+        const growthPeriod = sp.dur * 0.3; // Shoots forward in first 30% of lifespan
+        const growFr = Math.min(1, age / growthPeriod);
+        // Fades away in the remaining 70% of lifespan
+        const alpha = age < growthPeriod ? 1 : Math.max(0, 1 - (age - growthPeriod) / (sp.dur - growthPeriod));
+
+        if (alpha <= 0 || growFr <= 0) continue;
+
+        renderLightningBolt(ctx, sp.main, growFr, alpha, colors.stem, colors.flower, S);
+        if (sp.forks) {
+          for (const fork of sp.forks) {
+            renderLightningBolt(ctx, fork, growFr, alpha * 0.8, colors.stem, colors.flower, S * 0.7);
+          }
+        }
+      }
+    };
+
+    const renderGarden = (B, now, st, customCtx) => {
+      const currentCtx = customCtx || (state.mode === 'poster' ? pg : g);
       const S = st.S, L = st.letters, act = L.filter(l => !l.dead), sp = st.speed || 1;
       cc = st.C; _now = now; if (st.face) perch = [];
+
+      // ---------- THEME: ELECTRICITY (PURE YELLOW CRACKLING LIGHTNING) ----------
+      if (state.theme === 'electric') {
+        // Draw the text
+        for (const l of L) {
+          if (l.ch !== ' ' && (st.textAll || !l.dead)) {
+            B.text(l.ch, l.x, l.y, S, st.C.text);
+          }
+        }
+        // Draw the lightning sparks that grow and dissipate
+        for (const l of L) {
+          if (l.ch !== ' ') {
+            renderElectricSparksForLetter(currentCtx, l, now, S, st.C);
+          }
+        }
+        return;
+      }
+
+      // ---------- THEME: GARDEN (ORGANIC PLANTS & FLOWERS) ----------
       if (st.face) {
         for (const l of L) {
           let tx_lean = 0, ty_lean = 0;
@@ -1679,7 +1664,7 @@
           c[1] += (ty_lean - c[1]) * 0.07;
         }
       }
-      const f = st.boil ? Math.floor(now / (state.theme === 'electric' ? 70 : 120)) : 0;
+      const f = st.boil ? Math.floor(now / 120) : 0;
       const amp = st.boil ? Math.max(0.8, S * 0.01) : 0;
       const kd = l => l.dead ? 1 - eo((now - l.dead) / st.wither) : 1;
 
@@ -1720,12 +1705,13 @@
         boil: state.boil ?? true,
         recoil: state.recoil ?? 20,
         speed: 1,
-        wither: state.theme === 'electric' ? 180 : 260,
+        wither: state.theme === 'electric' ? 160 : 260,
         face: true
       };
-      renderGarden(B, now, st);
+
+      renderGarden(B, now, st, g);
       drawFlies(B, now, st.C);
-      drawInteractiveArc(B, now, st.C);
+      drawInteractiveArc(g, now, st.C);
 
       // Dropped gift nodes / double-tap
       if (caret && gifts && gifts.length) {
@@ -1734,7 +1720,19 @@
         for (const gf of gifts) {
           const age = now - gf.t0, w = 1 - eo((age - (LIFE - 2200)) / 2200);
           g.globalAlpha = Math.max(0, w);
-          rose(B, gf.x * W, gf.y * H + (1 - w) * Sd * 0.3, Sd * 0.24 * (0.65 + 0.35 * w), gf.rot + (1 - w) * 0.6, gf.e, age, null);
+          if (state.theme === 'electric') {
+            // High-voltage lightning burst ring
+            const r_circ = Sd * 0.25;
+            const pts = [];
+            for (let i = 0; i <= 10; i++) {
+              const th = i / 10 * Math.PI * 2;
+              const rad = r_circ * (0.8 + 0.3 * Math.sin(now * 0.03 + i));
+              pts.push([gf.x * W + Math.cos(th) * rad, gf.y * H + Math.sin(th) * rad]);
+            }
+            renderLightningBolt(g, pts, 1, w, st.C.stem, st.C.flower, Sd);
+          } else {
+            rose(B, gf.x * W, gf.y * H + (1 - w) * Sd * 0.3, Sd * 0.24 * (0.65 + 0.35 * w), gf.rot + (1 - w) * 0.6, gf.e, age, null);
+          }
         }
         g.globalAlpha = 1;
       }
@@ -1742,7 +1740,7 @@
       // Blinking typing caret
       if (caret) {
         const S = Sd;
-        const on = now - lastKey < 500 || Math.floor(now / (state.theme === 'electric' ? 380 : 530)) % 2 === 0;
+        const on = now - lastKey < 500 || Math.floor(now / (state.theme === 'electric' ? 320 : 530)) % 2 === 0;
         const hf = eo((now - t0) / 600);
         if (on && hf > 0) {
           const h_bar = 0.8 * S * hf, w_bar = Math.max(2, S * 0.03);
@@ -1807,7 +1805,7 @@
       for (const l of L) {
         if (l.ch === ' ') continue;
         addP(l, -l.tw / S / 2, -0.75); addP(l, l.tw / S / 2, 0.1);
-        const all = [...l.els, ...(l.endEls || [])];
+        const all = [...(l.els || []), ...(l.endEls || [])];
         for (const e of all) {
           if (e.t === 'stem') e.pts.forEach(q => addP(l, q[0], q[1], 0.02));
           else if (e.t === 'leaf') addP(l, e.x, e.y, e.L);
@@ -1861,7 +1859,7 @@
       }
 
       if (state.theme === 'electric') {
-        ballLightning(B, p_pos[0], p_pos[1], sz * 1.2, ang + t * 4, o, colors);
+        electricSparkWisp(pg, p_pos[0], p_pos[1], sz, tt);
       } else {
         butterfly(B, p_pos[0], p_pos[1], sz, ang, o, colors);
       }
@@ -1964,15 +1962,18 @@
         st.textAll = false;
       }
 
-      renderGarden(B, tt, st);
+      renderGarden(B, tt, st, pg);
       if (bars_val != null) bars(B, P, st, bars_val, 1);
       if (P.preset === 'reach') {
-        const [lx, ly] = _light, r_light = P.S * 0.09, pts = [];
-        for (let k = 0; k < 20; k++) {
-          const a = k / 20 * Math.PI * 2;
-          pts.push([lx + Math.cos(a) * r_light, ly + Math.sin(a) * r_light]);
-        }
-        B.fill(pts, st.C.line);
+        const [lx, ly] = _light, r_light = P.S * 0.09;
+        ctx.save();
+        ctx.shadowColor = st.C.flower;
+        ctx.shadowBlur = 16;
+        ctx.fillStyle = st.C.flower;
+        ctx.beginPath();
+        ctx.arc(lx, ly, r_light, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
       }
       if (P.preset === 'visit') posterFly(B, tt, P, st.C);
       if (P.preset === 'typed') {
@@ -2017,6 +2018,12 @@
       const A = letters.filter(l => !l.dead), last = A[A.length - 1];
       if (!last) return;
       last.dead = now;
+      if (state.theme === 'electric') {
+        // Fast dying spark burst on backspace
+        for (let i = 0; i < 4; i++) {
+          spawnSparkForLetter(last, now + i * 15, Sd || 100);
+        }
+      }
       const pv = A[A.length - 2];
       if (pv && pv.ch !== ' ') { pv.cut = null; pv.endEls = null; pv.tb = now; }
       layout();
@@ -2026,7 +2033,7 @@
       const A = letters.filter(l => !l.dead), last = A[A.length - 1];
       if (ch === ' ') {
         if (last && last.ch !== ' ') { last.cut = now; genEnd(last, now - last.birth); }
-        letters.push({ ch: ' ', id: uid++, birth: now, els: [] });
+        letters.push({ ch: ' ', id: uid++, birth: now, els: [], sparks: [] });
         layout();
         return;
       }
@@ -2169,7 +2176,7 @@
         const r = roster[id];
         if (r && (r.n !== p.n || r.c !== p.c)) peerStyle(p, r);
       }
-      const unitLabel = state.theme === 'electric' ? 'nodes connected' : 'gardeners here';
+      const unitLabel = state.theme === 'electric' ? 'sparks connected' : 'gardeners here';
       gardenerCountEl.textContent = n > 1 ? `${n} ${unitLabel}` : '';
     };
 
@@ -2203,7 +2210,7 @@
 
     const peerStyle = (p, r) => {
       p.n = r.n || 'visitor';
-      p.c = /^#[0-9A-Fa-f]{6}$/.test(r.c || '') ? r.c : '#FFFFFF';
+      p.c = /^#[0-9A-Fa-f]{6}$/.test(r.c || '') ? r.c : '#FFE600';
       p.el.querySelector('path').setAttribute('fill', p.c);
       const s = p.el.querySelector('span');
       s.textContent = p.n;
@@ -2274,35 +2281,15 @@
 
     const saveSVG = () => {
       const parts = [], n = v => Math.round(v * 100) / 100;
-      const pb = () => ({
-        d: '',
-        moveTo(x, y) { this.d += `M${n(x)} ${n(y)}`; },
-        lineTo(x, y) { this.d += `L${n(x)} ${n(y)}`; },
-        quadraticCurveTo(a, b, x, y) { this.d += `Q${n(a)} ${n(b)} ${n(x)} ${n(y)}`; },
-        closePath() { this.d += 'Z'; }
-      });
-      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       const palObj = getPal();
-      const B = {
-        fill: (p, col) => { const b = pb(); path(b, p, true); parts.push(`<path d="${b.d}" fill="${col}"/>`); },
-        stroke: (p, col, width) => { const b = pb(); path(b, p, false); parts.push(`<path d="${b.d}" fill="none" stroke="${col}" stroke-width="${n(width)}" stroke-linecap="round" stroke-linejoin="round"/>`); },
-        rect: () => {},
-        text: (ch, x, y, S, col) => {
-          parts.push(`<text x="${n(x)}" y="${n(y)}" text-anchor="middle" font-family="${FONT_FAMILY}" font-weight="700" font-size="${n(S)}" fill="${col}">${esc(ch)}</text>`);
-        }
-      };
+      const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-      const st = {
-        letters,
-        S: Sd,
-        C: palObj.C,
-        boil: state.boil ?? true,
-        recoil: state.recoil ?? 20,
-        speed: 1,
-        wither: 260,
-        face: true
-      };
-      renderGarden(B, performance.now(), st);
+      for (const l of letters) {
+        if (l.ch !== ' ' && !l.dead) {
+          parts.push(`<text x="${n(l.x)}" y="${n(l.y)}" text-anchor="middle" font-family="${FONT_FAMILY}" font-weight="700" font-size="${n(Sd)}" fill="${palObj.C.text}">${esc(l.ch)}</text>`);
+        }
+      }
+
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${n(W)}" height="${n(H)}" viewBox="0 0 ${n(W)} ${n(H)}"><defs><style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&amp;display=swap');</style></defs><rect width="100%" height="100%" fill="${palObj.bg}"/>${parts.join('')}</svg>`;
       downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), `${state.theme}-export.svg`);
       refocus();
@@ -2503,13 +2490,13 @@
 
     const updateHintsUI = () => {
       if (state.theme === 'electric') {
-        hintType.textContent = 'type to charge';
-        hintTap.textContent = 'tap to charge';
-        hintCut.textContent = 'space sparks';
-        hintWither.textContent = 'backspace shorts';
-        hintWitherC.textContent = '⌫ shorts';
-        hintClear.textContent = 'enter discharges';
-        hintClearC.textContent = 'return discharges';
+        hintType.textContent = 'type to spark';
+        hintTap.textContent = 'tap to spark';
+        hintCut.textContent = 'space discharges';
+        hintWither.textContent = 'backspace snaps';
+        hintWitherC.textContent = '⌫ snaps';
+        hintClear.textContent = 'enter grounds';
+        hintClearC.textContent = 'return grounds';
       } else {
         hintType.textContent = 'type to grow';
         hintTap.textContent = 'tap to type';
@@ -2529,7 +2516,7 @@
       if (theme === 'electric') {
         btnThemeGarden.className = 'theme-btn';
         btnThemeElectric.className = 'theme-btn active electric';
-        document.title = 'Electric Garden — High Voltage Type';
+        document.title = 'Electric Spark Type';
       } else {
         btnThemeGarden.className = 'theme-btn active garden';
         btnThemeElectric.className = 'theme-btn';
@@ -2540,7 +2527,7 @@
       updatePaletteUI();
       updatePresetUI();
 
-      // Regenerate all current letters in the new visual theme
+      // Re-initialize letters for the selected theme
       letters.forEach(l => {
         if (l.ch !== ' ') gen(l);
       });
@@ -2674,9 +2661,7 @@
     if (!vmime) btnExportVideo.disabled = true;
 
     // ---------- INITIALIZATION ----------
-    updateHintsUI();
-    updatePaletteUI();
-    updatePresetUI();
+    setTheme('electric'); // Start in electric theme as user requested!
     hiddenInput.value = SENT;
     resize();
     liveInit();
@@ -2692,7 +2677,7 @@
     }
 
     // Initial word
-    const initialWord = "bloom";
+    const initialWord = "spark";
     const initT = performance.now();
     for (let i = 0; i < initialWord.length; i++) {
       addLetter(initialWord[i], initT + i * 80);
