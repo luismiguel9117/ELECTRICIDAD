@@ -895,7 +895,21 @@
 
       // Precalculated fractal polyline - stable between animation frames
       const P_pts = fractalizePath(rawPts, 0.42, 3, r);
-      const segs = weave(r, opts.layer0 != null ? opts.layer0 : (r() < 0.5 ? 0 : 1));
+      const segs = opts.segs || weave(r, opts.layer0 != null ? opts.layer0 : (r() < 0.5 ? 0 : 1));
+
+      // Calculate traversal punctures (where the lightning penetrates the letter between front and behind)
+      const punctures = [];
+      for (let i = 0; i < segs.length - 1; i++) {
+        const cutU = segs[i].u1;
+        const [pt, ang] = at(P_pts, cutU);
+        punctures.push({
+          u: cutU,
+          pt,
+          ang,
+          fromLayer: segs[i].layer,
+          toLayer: segs[i + 1].layer
+        });
+      }
 
       // Slow, controlled growth: 2.2s to 3.8s per main branch as requested!
       const dur = Math.max(2200, (opts.dur || ((opts.len || 0.8) * 2800 + r() * 900)));
@@ -908,6 +922,7 @@
         id: uid++,
         pts: P_pts,
         segs,
+        punctures,
         d0,
         dur,
         w: widthFactor,
@@ -1206,71 +1221,89 @@
 
     const genElectric = l => {
       const r = rng((l.ws ^ Math.imul(l.wi + 1, 2654435761)) + Math.floor(rand() * 1e6));
-      const w = mw(l.ch), inX = () => (r() - 0.5) * w * 0.65;
+      const w = mw(l.ch);
       const vines = [];
       l.electricVines = vines;
       l.endElectricVines = null;
 
-      // 1. Ascending electrical vine climbing up the letterform
-      const base = [inX(), 0.05 + r() * 0.1];
-      const top = [base[0] + (r() - 0.5) * w * 0.6, -0.75 - r() * 0.35];
-      const mid1 = [base[0] + (r() - 0.5) * w * 0.5, -0.3 + (r() - 0.5) * 0.15];
-      const mid2 = [top[0] + (r() - 0.5) * w * 0.4, -0.55 + (r() - 0.5) * 0.15];
-      const pts_asc = bez(base, mid1, mid2, top, 10);
+      // 1. HELIX SPIRAL TRUNK (Wraps around and pierces through the letter in 3D)
+      // Behind (0-0.28) -> Pierces Through to Front (0.28-0.68) -> Pierces Through to Behind (0.68-1.0)
+      const p_base = [-w * 0.42 + (r() - 0.5) * 0.08, 0.06 + r() * 0.08];
+      const p_punc1 = [-w * 0.12, -0.26 + (r() - 0.5) * 0.06];
+      const p_midFace = [w * 0.14, -0.45 + (r() - 0.5) * 0.06];
+      const p_top = [-w * 0.08 + (r() - 0.5) * w * 0.25, -0.88 - r() * 0.3];
+      const pts_helix = bez(p_base, p_punc1, p_midFace, p_top, 16);
+
       growElectricVine(r, vines, null, {
-        pts: pts_asc,
-        len: Math.hypot(top[0] - base[0], top[1] - base[1]),
+        pts: pts_helix,
+        len: Math.hypot(p_top[0] - p_base[0], p_top[1] - p_base[1]) * 1.3,
         d0: 40,
-        dur: 2600 + r() * 1000,
-        layer0: r() < 0.5 ? 0 : 1
+        dur: 2700 + r() * 900,
+        segs: [
+          { u0: 0, u1: 0.28, layer: 0 },
+          { u0: 0.28, u1: 0.68, layer: 1 },
+          { u0: 0.68, u1: 1.0, layer: 0 }
+        ]
       });
 
-      // 2. Horizontal circuit bridge connecting from previous letter across the word
+      // 2. HORIZONTAL CIRCUIT BRIDGE (Pierces through adjacent letters connecting the whole word)
       if (l.prev) {
         const px = -(mw(l.prev.ch) + w) / 2;
-        const p0 = [px + (r() - 0.5) * 0.15, -0.2 - r() * 0.4];
-        const p3 = [inX(), -0.2 - r() * 0.4];
-        const bulge = (r() < 0.5 ? -1 : 1) * (0.25 + r() * 0.35);
-        const dx = p3[0] - p0[0];
-        const p1 = [p0[0] + dx * 0.25, p0[1] + bulge];
-        const p2 = [p3[0] - dx * 0.25, p3[1] + bulge * 0.9];
-        const pts_bridge = bez(p0, p1, p2, p3, 14);
+        const p0 = [px + 0.08, -0.32 + (r() - 0.5) * 0.15];
+        const p_midBridge = [(px + 0) / 2, -0.42 + (r() - 0.5) * 0.2];
+        const p_entry = [-w * 0.28, -0.36 + (r() - 0.5) * 0.1];
+        const p_exit = [w * 0.38, -0.34 + (r() - 0.5) * 0.1];
+        const pts_bridge = bez(p0, p_midBridge, p_entry, p_exit, 16);
+
         growElectricVine(r, vines, null, {
           pts: pts_bridge,
-          len: Math.abs(dx) + Math.abs(bulge),
+          len: Math.abs(p_exit[0] - p0[0]) * 1.1,
           d0: 90,
           dur: 2800 + r() * 800,
-          layer0: r() < 0.5 ? 0 : 1
+          segs: [
+            { u0: 0, u1: 0.34, layer: 1 },
+            { u0: 0.34, u1: 0.54, layer: 0 },
+            { u0: 0.54, u1: 1.0, layer: 1 }
+          ]
         });
       }
 
-      // 3. Word start lead-in flourish (sweeping electrical tendril into first letter)
+      // 3. DIAGONAL CROSS-CUT TENDRILL (Pierces from top-left front through to bottom-right back)
+      if (w > 0.38 || r() < 0.65) {
+        const p_diag0 = [-w * 0.32, -0.72 - r() * 0.15];
+        const p_diagMid1 = [-w * 0.05, -0.48];
+        const p_diagMid2 = [w * 0.22, -0.22];
+        const p_diagEnd = [w * 0.48, 0.18 + r() * 0.2];
+        const pts_diag = bez(p_diag0, p_diagMid1, p_diagMid2, p_diagEnd, 14);
+
+        growElectricVine(r, vines, null, {
+          pts: pts_diag,
+          len: 0.8 + r() * 0.3,
+          d0: 140,
+          dur: 2400 + r() * 800,
+          segs: [
+            { u0: 0, u1: 0.35, layer: 1 },
+            { u0: 0.35, u1: 0.68, layer: 0 },
+            { u0: 0.68, u1: 1.0, layer: 1 }
+          ]
+        });
+      }
+
+      // 4. Word start lead-in flourish (sweeping electrical tendril piercing into first letter)
       if (l.wi === 0) {
-        const p0 = [-w * 0.75 - r() * 0.35, -0.25 + (r() - 0.5) * 0.3];
-        const p2 = [inX(), -0.3 + (r() - 0.5) * 0.2];
-        const p1 = [(p0[0] + p2[0]) / 2, (p0[1] + p2[1]) / 2 + (r() - 0.5) * 0.2];
-        const pts_lead = bez(p0, p1, p1, p2, 10);
+        const p0 = [-w * 0.85 - r() * 0.35, -0.25 + (r() - 0.5) * 0.3];
+        const p1 = [-w * 0.35, -0.35];
+        const p2 = [w * 0.15, -0.32];
+        const pts_lead = bez(p0, p1, p1, p2, 12);
         growElectricVine(r, vines, null, {
           pts: pts_lead,
-          len: 0.7 + r() * 0.3,
-          d0: 30,
-          dur: 2500 + r() * 800,
-          layer0: 1
-        });
-      }
-
-      // 4. Subtle downward ground tendril in negative space below letter
-      if (r() < 0.45) {
-        const p0 = [inX(), -0.1];
-        const p2 = [inX() + (r() - 0.5) * 0.3, 0.25 + r() * 0.25];
-        const p1 = [(p0[0] + p2[0]) / 2 + (r() - 0.5) * 0.1, 0.08];
-        const pts_down = bez(p0, p1, p1, p2, 8);
-        growElectricVine(r, vines, null, {
-          pts: pts_down,
-          len: 0.45 + r() * 0.25,
-          d0: 160,
-          dur: 2300 + r() * 700,
-          layer0: 0
+          len: 0.85 + r() * 0.3,
+          d0: 20,
+          dur: 2600 + r() * 700,
+          segs: [
+            { u0: 0, u1: 0.48, layer: 0 },
+            { u0: 0.48, u1: 1.0, layer: 1 }
+          ]
         });
       }
     };
@@ -1281,18 +1314,21 @@
       const endVines = [];
       l.endElectricVines = endVines;
 
-      // 2 flourishing electric arcs discharging gracefully to the right into negative space
+      // 2 flourishing electric arcs piercing through from behind to in front and out into negative space
       for (let i = 0; i < 2; i++) {
-        const p0 = [w * 0.3 + (r() - 0.5) * 0.1, -0.2 - r() * 0.35];
-        const p2 = [w * 0.9 + r() * 0.6, -0.4 + (i - 0.5) * 0.7 + (r() - 0.5) * 0.3];
-        const p1 = [(p0[0] + p2[0]) / 2, (p0[1] + p2[1]) / 2 + (r() - 0.5) * 0.3];
-        const pts = bez(p0, p1, p1, p2, 10);
+        const p0 = [w * 0.1, -0.3 - (i - 0.5) * 0.3];
+        const p1 = [w * 0.38, -0.35];
+        const p2 = [w * 0.95 + r() * 0.6, -0.45 + (i - 0.5) * 0.7 + (r() - 0.5) * 0.3];
+        const pts = bez(p0, p1, p1, p2, 12);
         growElectricVine(r, endVines, null, {
           pts,
-          len: 0.7 + r() * 0.4,
-          d0: rel + 40 + i * 120,
-          dur: 2400 + r() * 800,
-          layer0: 1
+          len: 0.8 + r() * 0.4,
+          d0: rel + 40 + i * 140,
+          dur: 2500 + r() * 800,
+          segs: [
+            { u0: 0, u1: 0.35, layer: 0 },
+            { u0: 0.35, u1: 1.0, layer: 1 }
+          ]
         });
       }
     };
@@ -1711,8 +1747,8 @@
       }
     };
 
-    // ---------- RENDERING PROCEDURAL ELECTRIC VINES (ENREDADERA ELÉCTRICA) ----------
-    // Renders an electric vine with 3 luminous passes (#FFD500 halo, yellow filament, white core),
+    // ---------- RENDERING PROCEDURAL ELECTRIC VINES (ENREDADERA ELÉCTRICA INTERWEAVED) ----------
+    // Renders an electric vine with 4 luminous passes (golden halo, amber piercing edge, yellow core, white center),
     // progressive growth over 2.2s - 3.8s, and gentle continuous luminosity breathing once formed.
     const renderElectricVine = (ctx, v, l, now, S, st, layer) => {
       const age = (now - l.birth) * (st.speed || 1);
@@ -1773,20 +1809,41 @@
           ctx.lineTo(worldPts[k][0], worldPts[k][1]);
         }
 
-        // Pass 1: Soft luminous golden halo (#FFD500 / amber)
-        ctx.strokeStyle = `rgba(255, 213, 0, ${(0.30 * alpha).toFixed(3)})`;
-        ctx.lineWidth = baseWidth * 3.4;
-        ctx.stroke();
+        if (layer === 0) {
+          // BEHIND TEXT (Layer 0): Warm golden back-bleed around glyph silhouette
+          ctx.strokeStyle = `rgba(255, 213, 0, ${(0.35 * alpha).toFixed(3)})`;
+          ctx.lineWidth = baseWidth * 4.2;
+          ctx.stroke();
 
-        // Pass 2: Electric Yellow filament
-        ctx.strokeStyle = `rgba(255, 220, 30, ${(0.85 * alpha).toFixed(3)})`;
-        ctx.lineWidth = baseWidth * 1.5;
-        ctx.stroke();
+          ctx.strokeStyle = `rgba(255, 220, 30, ${(0.85 * alpha).toFixed(3)})`;
+          ctx.lineWidth = baseWidth * 1.5;
+          ctx.stroke();
 
-        // Pass 3: Brilliant white-hot core
-        ctx.strokeStyle = `rgba(255, 255, 240, ${(0.95 * alpha).toFixed(3)})`;
-        ctx.lineWidth = Math.max(0.7, baseWidth * 0.52);
-        ctx.stroke();
+          ctx.strokeStyle = `rgba(255, 255, 240, ${(0.95 * alpha).toFixed(3)})`;
+          ctx.lineWidth = Math.max(0.6, baseWidth * 0.52);
+          ctx.stroke();
+        } else {
+          // IN FRONT OF TEXT (Layer 1): Piercing incandescent incision across the white letter!
+          // Pass 1: Luminous Golden Halo
+          ctx.strokeStyle = `rgba(255, 213, 0, ${(0.45 * alpha).toFixed(3)})`;
+          ctx.lineWidth = baseWidth * 3.8;
+          ctx.stroke();
+
+          // Pass 2: Amber Incision Boundary (creates high-contrast piercing look on white text)
+          ctx.strokeStyle = `rgba(195, 95, 0, ${(0.88 * alpha).toFixed(3)})`;
+          ctx.lineWidth = baseWidth * 2.0;
+          ctx.stroke();
+
+          // Pass 3: Vivid Electric Yellow
+          ctx.strokeStyle = `rgba(255, 225, 10, ${(0.96 * alpha).toFixed(3)})`;
+          ctx.lineWidth = baseWidth * 1.35;
+          ctx.stroke();
+
+          // Pass 4: Incandescent White Core
+          ctx.strokeStyle = `rgba(255, 255, 255, ${(0.98 * alpha).toFixed(3)})`;
+          ctx.lineWidth = Math.max(0.7, baseWidth * 0.5);
+          ctx.stroke();
+        }
 
         ctx.restore();
       }
@@ -1794,16 +1851,74 @@
 
     const drawElectricLayer = (ctx, layer, now, st) => {
       const L = st.letters;
+      const S = st.S;
       for (const l of L) {
         if (l.ch === ' ') continue;
-        if (l.electricVines) {
-          for (const v of l.electricVines) {
-            renderElectricVine(ctx, v, l, now, st.S, st, layer);
-          }
+        const allV = [...(l.electricVines || []), ...(l.endElectricVines || [])];
+        for (const v of allV) {
+          renderElectricVine(ctx, v, l, now, S, st, layer);
         }
-        if (l.endElectricVines) {
-          for (const v of l.endElectricVines) {
-            renderElectricVine(ctx, v, l, now, st.S, st, layer);
+
+        // When drawing front layer (layer === 1), render piercing flares at the exact traversal points!
+        if (layer === 1) {
+          for (const v of allV) {
+            const age = (now - l.birth) * (st.speed || 1);
+            if (age < v.d0 || !v.punctures) continue;
+            const rawFr = (age - v.d0) / v.dur;
+            const fr = Math.min(1, Math.max(0, eo(rawFr)));
+            if (fr <= 0) continue;
+
+            let witherAlpha = 1;
+            if (l.dead) {
+              witherAlpha = Math.max(0, 1 - eo((now - l.dead) / (st.wither || 260)));
+              if (witherAlpha <= 0) continue;
+            }
+            const pulse = 0.85 + 0.15 * Math.sin(now * 0.0018 + v.phase);
+            const alpha = pulse * witherAlpha;
+
+            for (const punc of v.punctures) {
+              if (fr < punc.u) continue; // Puncture reached!
+              let wx = l.x + punc.pt[0] * S;
+              let wy = l.y + punc.pt[1] * S;
+              if (st.face && l.lean) {
+                const hh = Math.min(2.5, Math.max(0, -punc.pt[1]));
+                const f_lean = hh * hh * 0.5 + hh * 0.5;
+                wx += l.lean[0] * S * 0.08 * f_lean;
+                wy += l.lean[1] * S * 0.04 * f_lean;
+              }
+
+              const puncAge = Math.max(0, age - (v.d0 + v.dur * punc.u));
+              // Burst on penetration then steady luminous breathing
+              const burst = 1 + 0.45 * Math.exp(-puncAge * 0.003);
+
+              ctx.save();
+              ctx.shadowBlur = 0;
+
+              // 1. Incandescent golden-white plasma flare at point of traversal
+              const flareR = Math.max(3.5, S * 0.052 * burst);
+              const grad = ctx.createRadialGradient(wx, wy, 0, wx, wy, flareR);
+              grad.addColorStop(0, `rgba(255, 255, 255, ${(0.96 * alpha).toFixed(3)})`);
+              grad.addColorStop(0.28, `rgba(255, 225, 30, ${(0.86 * alpha).toFixed(3)})`);
+              grad.addColorStop(0.68, `rgba(255, 160, 0, ${(0.38 * alpha).toFixed(3)})`);
+              grad.addColorStop(1, 'rgba(255, 160, 0, 0)');
+              ctx.fillStyle = grad;
+              ctx.beginPath();
+              ctx.arc(wx, wy, flareR, 0, Math.PI * 2);
+              ctx.fill();
+
+              // 2. Micro-crack discharge crossing the glyph contour
+              const crackLen = S * 0.038 * burst;
+              const n_ang = punc.ang + Math.PI / 2;
+              ctx.strokeStyle = `rgba(255, 240, 180, ${(0.92 * alpha).toFixed(3)})`;
+              ctx.lineWidth = Math.max(0.8, S * 0.007);
+              ctx.lineCap = 'round';
+              ctx.beginPath();
+              ctx.moveTo(wx - Math.cos(n_ang) * crackLen * 0.5, wy - Math.sin(n_ang) * crackLen * 0.5);
+              ctx.lineTo(wx + Math.cos(n_ang) * crackLen * 0.5, wy + Math.sin(n_ang) * crackLen * 0.5);
+              ctx.stroke();
+
+              ctx.restore();
+            }
           }
         }
       }
