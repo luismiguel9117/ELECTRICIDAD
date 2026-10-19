@@ -157,7 +157,7 @@
       transform-style: preserve-3d;
       will-change: transform;
       transition: filter 0.25s ease;
-      filter: drop-shadow(0 20px 45px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 35px rgba(245, 158, 11, 0.25));
+      filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 25px rgba(245, 158, 11, 0.12));
     }
     .kallpa-card:active {
       cursor: grabbing;
@@ -187,8 +187,7 @@
       height: 100%;
       object-fit: contain;
       pointer-events: none;
-      mix-blend-mode: screen;
-      opacity: 0.95;
+      opacity: 0.35;
     }
 
     .kallpa-front-canvas {
@@ -2093,10 +2092,10 @@
         g.fillStyle = '#050505';
         g.fillRect(0, 0, W, H);
 
-        // Ambient radial amber aura behind can
+        // Subtle ambient radial amber aura behind can
         const bgGlow = g.createRadialGradient(W / 2, H / 2, 40, W / 2, H / 2, Math.max(W, H) * 0.45);
-        bgGlow.addColorStop(0, 'rgba(245, 158, 11, 0.16)');
-        bgGlow.addColorStop(0.35, 'rgba(255, 213, 0, 0.05)');
+        bgGlow.addColorStop(0, 'rgba(245, 158, 11, 0.08)');
+        bgGlow.addColorStop(0.35, 'rgba(255, 213, 0, 0.02)');
         bgGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
         g.fillStyle = bgGlow;
         g.fillRect(0, 0, W, H);
@@ -3299,31 +3298,19 @@
         );
         this.camera.position.z = 5;
 
-        // Lights calibrated for metallic aluminum
-        const ambientLight = new THREE.AmbientLight(0xffffff, this.config.lightAmb);
+        // Soft, balanced studio lighting without harsh specular glare or neon side stripes
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.95);
         this.scene.add(ambientLight);
 
-        const spotLight = new THREE.SpotLight(0xfff8ee, this.config.lightInt * 3.2);
-        spotLight.position.set(this.config.lightX, 0.8, 1.5);
-        spotLight.angle = Math.PI / 3.2;
-        spotLight.penumbra = 0.75;
-        spotLight.decay = 1.2;
-        spotLight.distance = 8;
-        this.scene.add(spotLight);
-        this.scene.add(spotLight.target);
-        spotLight.target.position.set(0, -0.05, 0);
+        // Gentle front-top directional key light for clear, crisp label readability
+        const keyLight = new THREE.DirectionalLight(0xffffff, 0.35);
+        keyLight.position.set(-0.6, 0.9, 2.2);
+        this.scene.add(keyLight);
 
-        const leftAmberRim = new THREE.DirectionalLight(0xf59e0b, 1.8);
-        leftAmberRim.position.set(-1.8, 0.2, 0.5);
-        this.scene.add(leftAmberRim);
-
-        const rightAmberRim = new THREE.DirectionalLight(0xea580c, 1.4);
-        rightAmberRim.position.set(1.8, -0.2, 0.5);
-        this.scene.add(rightAmberRim);
-
-        const frontFill = new THREE.DirectionalLight(0xffffff, 0.5);
-        frontFill.position.set(0, 0, 2);
-        this.scene.add(frontFill);
+        // Very subtle warm contour rim (soft 0.2, no blown-out neon streaks)
+        const rimLight = new THREE.DirectionalLight(0xfff3e0, 0.20);
+        rimLight.position.set(1.2, 0.3, 1.2);
+        this.scene.add(rimLight);
 
         // Cylindrical Lathe Geometry accurately contoured to the can's shoulder & base
         const totalH = this.config.cylBot - this.config.cylTop;
@@ -3370,8 +3357,8 @@
         const material = new THREE.MeshStandardMaterial({
           map: this.labelTexture,
           side: THREE.FrontSide,
-          roughness: 0.28,
-          metalness: 0.30,
+          roughness: 0.65, // Soft satin finish: diffuses highlights naturally, prevents burned hotspots
+          metalness: 0.08, // Natural printed aluminum finish
           transparent: true
         });
 
@@ -3389,8 +3376,7 @@
             #ifdef USE_MAP
               float _u = fract(${uvVar}.x + uOffset);
               vec4 sampledDiffuseColor = texture2D(map, vec2(_u, ${uvVar}.y));
-              sampledDiffuseColor.rgb = pow(sampledDiffuseColor.rgb, vec3(1.15));
-              float edgeSoftness = smoothstep(1.0, 0.982, ${uvVar}.y) * smoothstep(0.0, 0.015, ${uvVar}.y);
+              float edgeSoftness = smoothstep(1.0, 0.985, ${uvVar}.y) * smoothstep(0.0, 0.015, ${uvVar}.y);
               sampledDiffuseColor.a *= edgeSoftness;
               diffuseColor *= sampledDiffuseColor;
             #endif
