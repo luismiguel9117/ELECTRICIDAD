@@ -191,60 +191,22 @@
       opacity: 0.95;
     }
 
-    .kallpa-flavor-nav {
+    .kallpa-front-canvas {
       position: absolute;
-      bottom: calc(75px + env(safe-area-inset-bottom));
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      background: rgba(10, 10, 12, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      backdrop-filter: blur(12px);
-      padding: 6px 10px;
-      border-radius: 999px;
-      pointer-events: auto;
-      z-index: 6;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-    }
-
-    .kallpa-flavor-btn {
-      background: transparent;
-      border: 1px solid transparent;
-      color: #A3A3A3;
-      font-size: 11px;
-      font-family: inherit;
-      letter-spacing: 0.04em;
-      padding: 6px 12px;
-      border-radius: 999px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .kallpa-flavor-btn:hover {
-      color: #FFF;
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-    .kallpa-flavor-btn.active {
-      background: #FFF;
-      color: #000;
-      font-weight: 600;
-    }
-    .kallpa-flavor-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      display: inline-block;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
     }
 
     .kallpa-drag-hint {
       position: absolute;
-      bottom: calc(118px + env(safe-area-inset-bottom));
-      font-size: 10px;
+      bottom: calc(28px + env(safe-area-inset-bottom));
+      font-size: 11px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.45);
+      color: rgba(255, 213, 0, 0.7);
       pointer-events: none;
       user-select: none;
       animation: tg-live 3s ease-in-out infinite;
@@ -662,20 +624,20 @@
     <!-- 3D Kallpa Can Stage (Foreground Overlay when Kallpa theme is active) -->
     <div id="kallpaStage" class="kallpa-stage" style="display: none;">
       <div class="kallpa-card" id="kallpaCard">
-        <!-- Capa 1: Base de la Lata con silueta metálica y borde -->
-        <img class="kallpa-can-base" src="assets/kalpa-can-base.png" alt="Kallpa Base Can" draggable="false">
-        <!-- Capa 2: Canvas de Etiqueta Cilíndrica 3D con Three.js -->
+        <!-- Capa 1: Base de la Lata limpia con silueta metálica, tapa y base plateadas -->
+        <img class="kallpa-can-base" src="assets/kalpa-can-clean.png" alt="Kallpa Base Can" draggable="false">
+        <!-- Capa 2: Canvas de Etiqueta Cilíndrica 3D con Three.js (Rotación 360°) -->
         <canvas class="kallpa-can-canvas" id="kallpaCanvas" width="500" height="1000"></canvas>
         <!-- Capa 3: Gotas fotorrealistas y brillos metálicos superiores -->
         <img class="kallpa-can-overlay" src="assets/kalpa-can-droplets.png" alt="Condensation Droplets" draggable="false">
       </div>
 
-      <!-- Floating Flavor Selector -->
-      <div class="kallpa-flavor-nav" id="kallpaFlavorNav"></div>
+      <!-- Canvas para la electricidad frontal que envuelve la lata (Layer 1) -->
+      <canvas id="kallpaFrontCanvas" class="kallpa-front-canvas"></canvas>
 
       <!-- Drag / Interact Hint -->
       <div class="kallpa-drag-hint">
-        <span>⟵ Arrastra la lata para rotar en 3D ⟶</span>
+        <span>⚡ Arrastra la lata para rotar en 3D ⚡</span>
       </div>
     </div>
 
@@ -829,6 +791,8 @@
     const btnThemeElectric = document.getElementById('btnThemeElectric');
     const btnThemeKallpa = document.getElementById('btnThemeKallpa');
     const kallpaStage = document.getElementById('kallpaStage');
+    const kallpaFrontCanvas = document.getElementById('kallpaFrontCanvas');
+    const frontCtx = kallpaFrontCanvas ? kallpaFrontCanvas.getContext('2d') : null;
     const btnModeType = document.getElementById('btnModeType');
     const btnModePoster = document.getElementById('btnModePoster');
     const paletteBar = document.getElementById('paletteBar');
@@ -1351,6 +1315,10 @@
       W = r.width; H = r.height;
       mainCanvas.width = Math.round(r.width * dpr);
       mainCanvas.height = Math.round(r.height * dpr);
+      if (kallpaFrontCanvas) {
+        kallpaFrontCanvas.width = Math.round(r.width * dpr);
+        kallpaFrontCanvas.height = Math.round(r.height * dpr);
+      }
       layout(true);
     };
 
@@ -2119,6 +2087,42 @@
 
     const paint = (now, caret) => {
       g.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // ---------- KALLPA CAN THEME: PURE CAN ELECTRICITY (NO LETTERS) ----------
+      if (state.theme === 'kallpa') {
+        g.fillStyle = '#050505';
+        g.fillRect(0, 0, W, H);
+
+        // Ambient radial amber aura behind can
+        const bgGlow = g.createRadialGradient(W / 2, H / 2, 40, W / 2, H / 2, Math.max(W, H) * 0.45);
+        bgGlow.addColorStop(0, 'rgba(245, 158, 11, 0.16)');
+        bgGlow.addColorStop(0.35, 'rgba(255, 213, 0, 0.05)');
+        bgGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        g.fillStyle = bgGlow;
+        g.fillRect(0, 0, W, H);
+
+        // Layer 0: Can electricity BEHIND the can (on mainCanvas)
+        if (canElectricEngine) {
+          canElectricEngine.render(g, 0, now, W, H);
+        }
+
+        // Layer 1: Can electricity IN FRONT OF the can (on kallpaFrontCanvas)
+        if (frontCtx) {
+          frontCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          frontCtx.clearRect(0, 0, W, H);
+          if (canElectricEngine) {
+            canElectricEngine.render(frontCtx, 1, now, W, H);
+          }
+        }
+        return;
+      }
+
+      // Clear front canvas if switching from kallpa
+      if (frontCtx) {
+        frontCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        frontCtx.clearRect(0, 0, W, H);
+      }
+
       const palObj = getPal();
       g.fillStyle = palObj.bg;
       g.fillRect(0, 0, W, H);
@@ -2136,7 +2140,7 @@
 
       renderGarden(B, now, st, g);
       drawFlies(B, now, st.C);
-      if (state.theme !== 'kallpa') drawInteractiveArc(g, now, st.C);
+      drawInteractiveArc(g, now, st.C);
 
       // Dropped gift nodes / double-tap
       if (caret && gifts && gifts.length) {
@@ -2938,24 +2942,306 @@
       });
     };
 
-    // ---------- 3D KALLPA CAN EXPERIENCE (THREE.JS OFFSCREEN CYLINDER BLITTING) ----------
-    const CAN_FLAVORS = [
-      { id: 'original', name: 'Cold Brew', sub: 'Edición Original', label: 'assets/kalpa-label.png', dot: '#F59E0B' },
-      { id: 'gold', name: 'Maca & Guaraná', sub: 'Energía Andina', label: 'assets/kalpa-label-gold.png', dot: '#EAB308' },
-      { id: 'citrus', name: 'Camu Camu', sub: 'Cítricos & Cafeína', label: 'assets/kalpa-label-citrus.png', dot: '#F97316' },
-      { id: 'muna', name: 'Muña Andina', sub: 'Hierbas Ancestrales', label: 'assets/kalpa-label-muna.png', dot: '#10B981' },
-      { id: 'berry', name: 'Berries', sub: 'Aguaymanto & Frutos', label: 'assets/kalpa-label-berry.png', dot: '#EC4899' }
-    ];
+    // ---------- PROCEDURAL CAN ELECTRICITY ENGINE ----------
+    // Generates mathematically stable, organic yellow electricity wrapping around the 3D can.
+    // - Two layers: Layer 0 (behind can, rendered to mainCanvas) and Layer 1 (in front of can, rendered to kallpaFrontCanvas).
+    // - 4 asynchronous concurrent arc slots with staggered lifespans (no synchronous bursting).
+    // - Full 360° coverage: upper crown (upward), base groundings (downward), lateral flanks, diagonal coils.
+    // - Progressive growth (t0 to 0.38), steady linger (0.38 to 0.66), progressive tail retraction & fade-out (0.66 to 1.0).
+    // - Origin point disappears completely on retraction before rebirth at a new location.
+    // - ZERO dots / circles on turns or bends (no ctx.arc).
+
+    class CanElectricArc {
+      constructor(slotId, startDelay = 0) {
+        this.slotId = slotId;
+        this.t0 = performance.now() + startDelay;
+        this.duration = 3200 + Math.random() * 1400; // 3.2s to 4.6s lifespan
+        this.seed = Math.floor(Math.random() * 100000);
+        this.zone = slotId % 6;
+        this.buildPath();
+      }
+
+      reset(now, nextZone) {
+        this.t0 = now;
+        this.duration = 3000 + Math.random() * 1500;
+        this.seed = Math.floor(Math.random() * 100000);
+        this.zone = nextZone != null ? nextZone : Math.floor(Math.random() * 6);
+        this.buildPath();
+      }
+
+      buildPath() {
+        const z = this.zone;
+        const r = rng(this.seed);
+
+        let waypoints = [];
+        // u in [-1.4, 1.4] relative to can half-width (125px)
+        // v in [-1.2, 1.2] relative to can half-height (250px)
+        // depth z: < 0 behind can (layer 0), >= 0 in front of can (layer 1)
+
+        if (z === 0) {
+          // Upper Crown (Shoulders & Lid sparking UPWARD and outward into air)
+          const side = r() > 0.5 ? 1 : -1;
+          waypoints = [
+            { u: side * (0.3 + r() * 0.3), v: -0.72 + r() * 0.1, z: 0.2 },
+            { u: side * (0.55 + r() * 0.35), v: -0.88 - r() * 0.15, z: -0.3 },
+            { u: side * (0.8 + r() * 0.5), v: -1.05 - r() * 0.3, z: -0.8 },
+            { u: side * (1.1 + r() * 0.6), v: -1.25 - r() * 0.45, z: -1.0 }
+          ];
+        } else if (z === 1) {
+          // Downward Base Grounding (Striking DOWNWARD from bottom chime into the floor)
+          const side = r() > 0.5 ? 1 : -1;
+          waypoints = [
+            { u: side * (0.2 + r() * 0.4), v: 0.78 + r() * 0.08, z: 0.4 },
+            { u: side * (0.45 + r() * 0.4), v: 0.95 + r() * 0.12, z: 0.1 },
+            { u: side * (0.7 + r() * 0.5), v: 1.15 + r() * 0.22, z: -0.4 },
+            { u: side * (0.9 + r() * 0.6), v: 1.35 + r() * 0.35, z: -0.8 }
+          ];
+        } else if (z === 2) {
+          // Diagonal Wrap Down (Upper-Left Behind -> Front Center -> Lower-Right Behind)
+          const dir = r() > 0.5 ? 1 : -1;
+          waypoints = [
+            { u: -dir * (0.95 + r() * 0.2), v: -0.65 - r() * 0.2, z: -0.7 },
+            { u: -dir * (0.6 + r() * 0.2), v: -0.35 + r() * 0.15, z: -0.1 },
+            { u: 0.0 + (r() - 0.5) * 0.3, v: 0.0 + (r() - 0.5) * 0.2, z: 0.8 },
+            { u: dir * (0.65 + r() * 0.2), v: 0.38 + r() * 0.15, z: 0.2 },
+            { u: dir * (1.05 + r() * 0.25), v: 0.68 + r() * 0.2, z: -0.6 }
+          ];
+        } else if (z === 3) {
+          // Diagonal Wrap Up (Lower-Left Behind -> Front Center -> Upper-Right Behind)
+          const dir = r() > 0.5 ? 1 : -1;
+          waypoints = [
+            { u: -dir * (1.0 + r() * 0.2), v: 0.62 + r() * 0.18, z: -0.6 },
+            { u: -dir * (0.55 + r() * 0.2), v: 0.28 + r() * 0.15, z: 0.2 },
+            { u: 0.05 * dir, v: -0.05 + (r() - 0.5) * 0.2, z: 0.9 },
+            { u: dir * (0.62 + r() * 0.2), v: -0.38 + r() * 0.15, z: 0.1 },
+            { u: dir * (1.05 + r() * 0.25), v: -0.7 + r() * 0.18, z: -0.7 }
+          ];
+        } else if (z === 4) {
+          // Left Lateral Rim & Flank Hugging Arc
+          waypoints = [
+            { u: -0.85 - r() * 0.15, v: -0.55 + r() * 0.15, z: -0.3 },
+            { u: -1.02 - r() * 0.2, v: -0.15 + r() * 0.15, z: 0.2 },
+            { u: -0.98 - r() * 0.18, v: 0.22 + r() * 0.15, z: 0.4 },
+            { u: -0.88 - r() * 0.15, v: 0.6 + r() * 0.15, z: -0.2 }
+          ];
+        } else {
+          // Right Lateral Rim & Flank Hugging Arc
+          waypoints = [
+            { u: 0.85 + r() * 0.15, v: -0.52 + r() * 0.15, z: -0.3 },
+            { u: 1.02 + r() * 0.2, v: -0.12 + r() * 0.15, z: 0.2 },
+            { u: 0.98 + r() * 0.18, v: 0.25 + r() * 0.15, z: 0.4 },
+            { u: 0.88 + r() * 0.15, v: 0.62 + r() * 0.15, z: -0.2 }
+          ];
+        }
+
+        // Subdivide waypoints into an angular parametric electric lightning path
+        const pts = [];
+        for (let i = 0; i < waypoints.length - 1; i++) {
+          const p1 = waypoints[i];
+          const p2 = waypoints[i + 1];
+          const segs = 7 + Math.floor(r() * 4);
+          const dx = p2.u - p1.u, dy = p2.v - p1.v, dz = p2.z - p1.z;
+          const len = Math.hypot(dx, dy) || 1;
+          const nx = -dy / len, ny = dx / len;
+
+          for (let s = 0; s <= segs; s++) {
+            if (i > 0 && s === 0) continue;
+            const t = s / segs;
+            // Deterministic angular displacement (no frame-by-frame noise)
+            const env = Math.sin(t * Math.PI);
+            const jitterAmp = (r() - 0.5) * 0.18 * env;
+            const u = p1.u + dx * t + nx * jitterAmp;
+            const v = p1.v + dy * t + ny * jitterAmp;
+            const z = p1.z + dz * t;
+            pts.push({ u, v, z });
+          }
+        }
+        this.points = pts;
+
+        // Create 1 or 2 small sub-branches (depth 1)
+        this.branches = [];
+        const numBranches = r() > 0.35 ? (r() > 0.65 ? 2 : 1) : 0;
+        for (let b = 0; b < numBranches; b++) {
+          const forkIdx = Math.floor(pts.length * (0.28 + r() * 0.45));
+          const forkPt = pts[forkIdx];
+          const nextPt = pts[Math.min(pts.length - 1, forkIdx + 1)];
+          const bdx = nextPt.u - forkPt.u, bdy = nextPt.v - forkPt.v;
+          const blen = Math.hypot(bdx, bdy) || 1;
+          const angle = Math.atan2(bdy, bdx) + (r() > 0.5 ? 0.6 : -0.6) + (r() - 0.5) * 0.3;
+          const branchLen = (0.25 + r() * 0.3);
+          const bSegs = 4 + Math.floor(r() * 3);
+          const bPts = [{ u: forkPt.u, v: forkPt.v, z: forkPt.z }];
+
+          for (let s = 1; s <= bSegs; s++) {
+            const bt = s / bSegs;
+            const dist = branchLen * bt;
+            const jit = (r() - 0.5) * 0.08 * Math.sin(bt * Math.PI);
+            const bu = forkPt.u + Math.cos(angle) * dist - Math.sin(angle) * jit;
+            const bv = forkPt.v + Math.sin(angle) * dist + Math.cos(angle) * jit;
+            bPts.push({ u: bu, v: bv, z: forkPt.z });
+          }
+          this.branches.push({
+            forkFrac: forkIdx / (pts.length - 1),
+            points: bPts
+          });
+        }
+      }
+
+      render(ctx, targetLayer, now, cx, cy, canW, canH) {
+        const elapsed = now - this.t0;
+        if (elapsed < 0) return; // not yet born
+        const prog = elapsed / this.duration;
+        if (prog >= 1.0) {
+          // Reincarnate at a new position
+          this.reset(now + Math.random() * 250);
+          return;
+        }
+
+        // Timeline phases:
+        // 0.00 -> 0.38 : Growth (head advances from 0 to 1, tail at 0)
+        // 0.38 -> 0.66 : Steady linger (head 1, tail 0, subtle harmonic vibration)
+        // 0.66 -> 1.00 : Progressive tail retraction & fade (tail advances from 0 to 1, opacity fades out)
+        let head = 1, tail = 0, alpha = 1;
+        if (prog < 0.38) {
+          head = prog / 0.38;
+          tail = 0;
+          alpha = Math.min(1, prog / 0.08);
+        } else if (prog <= 0.66) {
+          head = 1;
+          tail = 0;
+          alpha = 1;
+        } else {
+          head = 1;
+          tail = (prog - 0.66) / 0.34;
+          alpha = Math.max(0, 1 - tail);
+        }
+
+        if (alpha <= 0.005 || tail >= head) return;
+
+        // Subtle micro-pulse
+        const pulse = 1.0 + 0.12 * Math.sin(now * 0.015 + this.seed);
+        const curAlpha = Math.min(1, alpha * pulse);
+
+        const totalPts = this.points.length;
+        const startIdx = Math.max(0, Math.floor(tail * (totalPts - 1)));
+        const endIdx = Math.min(totalPts - 1, Math.ceil(head * (totalPts - 1)));
+        if (endIdx <= startIdx) return;
+
+        // Draw primary backbone path filtered by layer
+        this.renderSegmentList(ctx, targetLayer, this.points, startIdx, endIdx, curAlpha, cx, cy, canW, canH, 1.0);
+
+        // Draw branches if growth has reached their fork point
+        for (const br of this.branches) {
+          if (head >= br.forkFrac && tail < br.forkFrac) {
+            const brProg = Math.min(1, (head - br.forkFrac) / 0.25);
+            const brTail = Math.min(1, Math.max(0, (tail - br.forkFrac) / 0.25));
+            const brEndIdx = Math.min(br.points.length - 1, Math.ceil(brProg * (br.points.length - 1)));
+            const brStartIdx = Math.max(0, Math.floor(brTail * (br.points.length - 1)));
+            if (brEndIdx > brStartIdx) {
+              this.renderSegmentList(ctx, targetLayer, br.points, brStartIdx, brEndIdx, curAlpha * 0.85, cx, cy, canW, canH, 0.7);
+            }
+          }
+        }
+      }
+
+      renderSegmentList(ctx, targetLayer, ptsList, startIdx, endIdx, alpha, cx, cy, canW, canH, scaleWidth) {
+        const halfW = canW * 0.5;
+        const halfH = canH * 0.5;
+
+        let currentRun = [];
+        for (let i = startIdx; i < endIdx; i++) {
+          const p1 = ptsList[i];
+          const p2 = ptsList[i + 1];
+          const avgZ = (p1.z + p2.z) * 0.5;
+          const isTarget = targetLayer === 0 ? (avgZ < 0.05) : (avgZ >= 0.05);
+
+          if (isTarget) {
+            if (currentRun.length === 0) {
+              currentRun.push({ x: cx + p1.u * halfW, y: cy + p1.v * halfH });
+            }
+            currentRun.push({ x: cx + p2.u * halfW, y: cy + p2.v * halfH });
+          } else {
+            if (currentRun.length > 1) {
+              this.strokePath(ctx, currentRun, alpha, scaleWidth);
+            }
+            currentRun = [];
+          }
+        }
+
+        if (currentRun.length > 1) {
+          this.strokePath(ctx, currentRun, alpha, scaleWidth);
+        }
+      }
+
+      strokePath(ctx, path, alpha, scaleWidth) {
+        if (path.length < 2) return;
+
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'miter';
+        ctx.miterLimit = 3;
+
+        // 1. Soft Amber/Yellow Ambient Glow
+        ctx.beginPath();
+        ctx.moveTo(path[0].x, path[0].y);
+        for (let i = 1; i < path.length; i++) ctx.lineTo(path[i].x, path[i].y);
+        ctx.strokeStyle = `rgba(255, 213, 0, ${(0.18 * alpha).toFixed(3)})`;
+        ctx.lineWidth = 7.0 * scaleWidth;
+        ctx.stroke();
+
+        // 2. High-energy Yellow Mid-Stroke (#FFD500)
+        ctx.beginPath();
+        ctx.moveTo(path[0].x, path[0].y);
+        for (let i = 1; i < path.length; i++) ctx.lineTo(path[i].x, path[i].y);
+        ctx.strokeStyle = `rgba(255, 213, 0, ${(0.9 * alpha).toFixed(3)})`;
+        ctx.lineWidth = 2.4 * scaleWidth;
+        ctx.stroke();
+
+        // 3. Crisp Pure Core (#FFF8CC / White core, 1.1px)
+        ctx.beginPath();
+        ctx.moveTo(path[0].x, path[0].y);
+        for (let i = 1; i < path.length; i++) ctx.lineTo(path[i].x, path[i].y);
+        ctx.strokeStyle = `rgba(255, 250, 220, ${(0.95 * alpha).toFixed(3)})`;
+        ctx.lineWidth = 1.1 * scaleWidth;
+        ctx.stroke();
+
+        ctx.restore();
+      }
+    }
+
+    class CanElectricEngine {
+      constructor() {
+        // 4 concurrent asynchronous arcs, staggered at startup
+        this.arcs = [
+          new CanElectricArc(0, 0),
+          new CanElectricArc(1, 950),
+          new CanElectricArc(2, 1900),
+          new CanElectricArc(3, 2850)
+        ];
+      }
+
+      render(ctx, targetLayer, now, W, H) {
+        const cx = W / 2;
+        const cy = H / 2;
+        const canW = 250;
+        const canH = 500;
+
+        for (const arc of this.arcs) {
+          arc.render(ctx, targetLayer, now, cx, cy, canW, canH);
+        }
+      }
+    }
+
+    let canElectricEngine = null;
+
+    // ---------- 3D KALLPA CAN EXPERIENCE (THREE.JS HARDWARE WEBGL) ----------
+    const KALLPA_LABEL_URL = 'assets/kalpa-label.png';
 
     class KallpaCanExperience {
       constructor() {
         this.card = document.getElementById('kallpaCard');
         this.canvas = document.getElementById('kallpaCanvas');
-        this.nav = document.getElementById('kallpaFlavorNav');
-        this.ctx2d = this.canvas ? this.canvas.getContext('2d') : null;
-
-        this.currentFlavorIndex = 0;
-        this.rotOffset = 0.475; // Centers "KALPA" logo facing camera
+        this.rotOffset = 0.475; // Initial rotation centering "KALPA" logo facing camera
         this.rotVelocity = 0;
 
         // Interaction state
@@ -2972,15 +3258,11 @@
 
         this.initialized = false;
         this.initThree();
-        this.initUI();
         this.bindEvents();
       }
 
       initThree() {
-        if (typeof THREE === 'undefined') {
-          console.warn('Three.js not loaded yet');
-          return;
-        }
+        if (typeof THREE === 'undefined' || !this.canvas) return;
 
         this.width = 500;
         this.height = 1000;
@@ -2991,14 +3273,14 @@
           cylBot: 0.925,
           cylWidth: 0.764,
           cylCurv: 2.2,
-          frontRot: 0.475,
           lightInt: 1.8,
-          lightAmb: 0.42,
+          lightAmb: 0.45,
           lightX: -0.9
         };
 
-        // Offscreen WebGL Renderer
+        // Render directly into the visible canvas with hardware WebGL
         this.renderer = new THREE.WebGLRenderer({
+          canvas: this.canvas,
           alpha: true,
           antialias: true,
           powerPreference: 'high-performance'
@@ -3017,7 +3299,7 @@
         );
         this.camera.position.z = 5;
 
-        // Lights calibrated for metallic brushed aluminum
+        // Lights calibrated for metallic aluminum
         const ambientLight = new THREE.AmbientLight(0xffffff, this.config.lightAmb);
         this.scene.add(ambientLight);
 
@@ -3039,7 +3321,7 @@
         rightAmberRim.position.set(1.8, -0.2, 0.5);
         this.scene.add(rightAmberRim);
 
-        const frontFill = new THREE.DirectionalLight(0xffffff, 0.45);
+        const frontFill = new THREE.DirectionalLight(0xffffff, 0.5);
         frontFill.position.set(0, 0, 2);
         this.scene.add(frontFill);
 
@@ -3050,7 +3332,7 @@
         const chimeRadius = 0.182;
 
         const points = [];
-        const steps = 50;
+        const steps = 60;
         for (let i = 0; i <= steps; i++) {
           const t = i / steps;
           let r = bodyRadius;
@@ -3071,28 +3353,22 @@
         this.mesh.rotation.x = (this.config.cylCurv * Math.PI) / 180;
         this.scene.add(this.mesh);
 
+        // Texture loader for Kallpa original label
         this.textureLoader = new THREE.TextureLoader();
-        this.materials = [];
+        this.uOffset = { value: this.rotOffset };
 
-        // Preload flavor materials
-        CAN_FLAVORS.forEach((fl, idx) => {
-          this.materials[idx] = this.createMaterial(fl.label);
+        this.labelTexture = this.textureLoader.load(KALLPA_LABEL_URL, (tex) => {
+          tex.wrapS = THREE.RepeatWrapping;
+          tex.wrapT = THREE.ClampToEdgeWrapping;
+          if (THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
+          tex.generateMipmaps = true;
+          tex.needsUpdate = true;
         });
-
-        this.initialized = true;
-      }
-
-      createMaterial(labelUrl) {
-        const uOffset = { value: this.config.frontRot };
-        const texture = this.textureLoader.load(labelUrl, () => {
-          texture.wrapS = THREE.RepeatWrapping;
-          texture.wrapT = THREE.ClampToEdgeWrapping;
-          if (THREE.SRGBColorSpace) texture.colorSpace = THREE.SRGBColorSpace;
-          texture.generateMipmaps = true;
-        });
+        this.labelTexture.wrapS = THREE.RepeatWrapping;
+        this.labelTexture.wrapT = THREE.ClampToEdgeWrapping;
 
         const material = new THREE.MeshStandardMaterial({
-          map: texture,
+          map: this.labelTexture,
           side: THREE.FrontSide,
           roughness: 0.28,
           metalness: 0.30,
@@ -3100,20 +3376,21 @@
         });
 
         material.onBeforeCompile = (shader) => {
-          shader.uniforms.uOffset = uOffset;
+          shader.uniforms.uOffset = this.uOffset;
           shader.fragmentShader = shader.fragmentShader.replace(
             '#include <common>',
             `#include <common>
             uniform float uOffset;`
           );
+          const uvVar = shader.fragmentShader.includes('vMapUv') ? 'vMapUv' : 'vUv';
           shader.fragmentShader = shader.fragmentShader.replace(
             '#include <map_fragment>',
             `
             #ifdef USE_MAP
-              float _u = fract(vMapUv.x + uOffset);
-              vec4 sampledDiffuseColor = texture2D(map, vec2(_u, vMapUv.y));
+              float _u = fract(${uvVar}.x + uOffset);
+              vec4 sampledDiffuseColor = texture2D(map, vec2(_u, ${uvVar}.y));
               sampledDiffuseColor.rgb = pow(sampledDiffuseColor.rgb, vec3(1.15));
-              float edgeSoftness = smoothstep(1.0, 0.982, vMapUv.y) * smoothstep(0.0, 0.015, vMapUv.y);
+              float edgeSoftness = smoothstep(1.0, 0.982, ${uvVar}.y) * smoothstep(0.0, 0.015, ${uvVar}.y);
               sampledDiffuseColor.a *= edgeSoftness;
               diffuseColor *= sampledDiffuseColor;
             #endif
@@ -3121,31 +3398,8 @@
           );
         };
 
-        return { material, texture, setOffset: val => { uOffset.value = val; } };
-      }
-
-      initUI() {
-        if (!this.nav) return;
-        this.nav.innerHTML = '';
-        CAN_FLAVORS.forEach((fl, i) => {
-          const btn = document.createElement('button');
-          btn.className = `kallpa-flavor-btn ${i === this.currentFlavorIndex ? 'active' : ''}`;
-          btn.innerHTML = `<span class="kallpa-flavor-dot" style="background:${fl.dot}"></span><span>${fl.name}</span>`;
-          btn.onclick = (e) => {
-            e.stopPropagation();
-            this.setFlavor(i);
-          };
-          this.nav.appendChild(btn);
-        });
-      }
-
-      setFlavor(idx) {
-        this.currentFlavorIndex = idx;
-        const btns = this.nav.querySelectorAll('.kallpa-flavor-btn');
-        btns.forEach((b, i) => {
-          b.className = `kallpa-flavor-btn ${i === idx ? 'active' : ''}`;
-        });
-        this.rotVelocity = 0.014;
+        this.mesh.material = material;
+        this.initialized = true;
       }
 
       bindEvents() {
@@ -3163,7 +3417,7 @@
         const onMove = (clientX, clientY) => {
           if (this.isDragging) {
             const dx = clientX - this.dragStartX;
-            this.rotOffset = (this.dragStartRot - dx * 0.0025) % 1.0;
+            this.rotOffset = ((this.dragStartRot - dx * 0.0025) % 1.0 + 1.0) % 1.0;
             const now = performance.now();
             const dt = Math.max(1, now - this.lastDragTime);
             this.rotVelocity = -((clientX - this.lastDragX) * 0.0025) / dt * 16;
@@ -3202,9 +3456,16 @@
         // Damping and continuous ambient rotation
         if (!this.isDragging) {
           this.rotVelocity *= Math.pow(0.92, dt / 16);
-          const ambientSpeed = 0.00015;
-          this.rotOffset = (this.rotOffset + this.rotVelocity + ambientSpeed * dt) % 1.0;
+          const ambientSpeed = 0.00016; // Continuous smooth spin
+          this.rotOffset = ((this.rotOffset + this.rotVelocity + ambientSpeed * dt) % 1.0 + 1.0) % 1.0;
         }
+
+        // Apply rotation to shader uniform and texture offset
+        this.uOffset.value = this.rotOffset;
+        if (this.labelTexture) {
+          this.labelTexture.offset.x = this.rotOffset;
+        }
+        this.mesh.rotation.y = this.rotOffset * Math.PI * 2;
 
         // Smooth tilt and floating vertical bob
         const k = 1 - Math.exp(-dt / 80);
@@ -3214,19 +3475,8 @@
 
         this.card.style.transform = `translateY(${bob.toFixed(2)}px) rotateX(${this.tiltX.toFixed(2)}deg) rotateY(${this.tiltY.toFixed(2)}deg)`;
 
-        // Render 3D cylinder offscreen
-        const matObj = this.materials[this.currentFlavorIndex];
-        if (matObj && matObj.material) {
-          matObj.setOffset(this.rotOffset);
-          this.mesh.material = matObj.material;
-          this.renderer.render(this.scene, this.camera);
-
-          // Blit to visible canvas
-          if (this.ctx2d) {
-            this.ctx2d.clearRect(0, 0, this.width, this.height);
-            this.ctx2d.drawImage(this.renderer.domElement, 0, 0, this.width, this.height);
-          }
-        }
+        // Render directly to WebGL canvas
+        this.renderer.render(this.scene, this.camera);
       }
     }
 
@@ -3244,13 +3494,13 @@
 
     const updateHintsUI = () => {
       if (state.theme === 'kallpa') {
-        hintType.textContent = 'type to spark behind';
-        hintTap.textContent = 'drag to spin 3D can';
-        hintCut.textContent = 'space discharges';
-        hintWither.textContent = 'backspace snaps';
-        hintWitherC.textContent = '⌫ snaps';
-        hintClear.textContent = 'enter grounds';
-        hintClearC.textContent = 'return grounds';
+        hintType.textContent = 'lata 3d kallpa';
+        hintTap.textContent = 'arrastra para rotar la lata';
+        hintCut.textContent = 'electricidad procedural';
+        hintWither.textContent = 'rotación continua 360°';
+        hintWitherC.textContent = '360°';
+        hintClear.textContent = 'energía andina';
+        hintClearC.textContent = 'kallpa';
       } else if (state.theme === 'electric') {
         hintType.textContent = 'type to spark';
         hintTap.textContent = 'tap to spark';
@@ -3280,23 +3530,25 @@
         btnThemeElectric.className = 'theme-btn electric';
         btnThemeKallpa.className = 'theme-btn active kallpa';
         kallpaStage.style.display = 'flex';
-        document.title = 'Kallpa Energy • 3D Can Experience';
-        const curText = letters.filter(l => !l.dead).map(l => l.ch).join('').trim();
-        if (!curText || curText.toLowerCase() === 'electric' || curText.toLowerCase() === 'sparawaw') {
-          setText('KALPA');
-        }
+        typeBar.style.display = 'none';
+        document.title = 'Kallpa Energy • Lata 3D';
+        letters = []; // Pure can focus: no letters behind can
       } else if (theme === 'electric') {
         btnThemeGarden.className = 'theme-btn garden';
         btnThemeElectric.className = 'theme-btn active electric';
         btnThemeKallpa.className = 'theme-btn kallpa';
         kallpaStage.style.display = 'none';
+        if (state.mode === 'type') typeBar.style.display = 'flex';
         document.title = 'Líneas Eléctricas';
+        if (letters.filter(l => !l.dead).length === 0) setText('sparawaw');
       } else {
         btnThemeGarden.className = 'theme-btn active garden';
         btnThemeElectric.className = 'theme-btn electric';
         btnThemeKallpa.className = 'theme-btn kallpa';
         kallpaStage.style.display = 'none';
+        if (state.mode === 'type') typeBar.style.display = 'flex';
         document.title = 'Type Garden';
+        if (letters.filter(l => !l.dead).length === 0) setText('sparawaw');
       }
 
       updateHintsUI();
@@ -3439,9 +3691,10 @@
 
     // ---------- INITIALIZATION ----------
     try {
+      canElectricEngine = new CanElectricEngine();
       kallpaExperience = new KallpaCanExperience();
     } catch (err) {
-      console.warn('Kallpa experience init error:', err);
+      console.warn('Experience init error:', err);
     }
 
     setTheme('electric'); // Start in electric theme
