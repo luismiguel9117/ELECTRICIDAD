@@ -636,7 +636,7 @@
 
       <!-- Drag / Interact Hint -->
       <div class="kallpa-drag-hint">
-        <span>⚡ Arrastra la lata para rotar en 3D ⚡</span>
+        <span>⚡ Pasa el cursor o arrastra para activar rotación 360° ⚡</span>
       </div>
     </div>
 
@@ -3233,27 +3233,66 @@
 
     let canElectricEngine = null;
 
-    // ---------- 3D KALLPA CAN EXPERIENCE (THREE.JS HARDWARE WEBGL) ----------
+    // ---------- SPRING VALUE (PHYSICS ENGINE FROM KALLPA REPO) ----------
+    class SpringValue {
+      constructor(initial = 0, stiffness = 100, damping = 14) {
+        this.value = initial;
+        this.target = initial;
+        this.velocity = 0;
+        this.stiffness = stiffness;
+        this.damping = damping;
+      }
+
+      update(dt) {
+        const force = (this.target - this.value) * this.stiffness;
+        const dampingForce = -this.velocity * this.damping;
+        const acceleration = force + dampingForce;
+        this.velocity += acceleration * dt;
+        this.value += this.velocity * dt;
+
+        if (Math.abs(this.velocity) < 0.0005 && Math.abs(this.target - this.value) < 0.0005) {
+          this.value = this.target;
+          this.velocity = 0;
+        }
+        return this.value;
+      }
+    }
+
+    // ---------- 3D KALLPA CAN EXPERIENCE (ANIMATION SYSTEM FROM KALLPA REPOSITORY) ----------
     const KALLPA_LABEL_URL = 'assets/kalpa-label.png';
 
     class KallpaCanExperience {
       constructor() {
         this.card = document.getElementById('kallpaCard');
         this.canvas = document.getElementById('kallpaCanvas');
-        this.rotOffset = 0.475; // Initial rotation centering "KALPA" logo facing camera
-        this.rotVelocity = 0;
+        this.baseRot = 0.475; // Centers "KALPA" logo facing camera
 
-        // Interaction state
+        // Timers & config matching Kallpa repo
+        this.spinDuration = 2200; // ms for a complete 360° turn
+        this.ambientSpinInterval = 6500; // ms between spontaneous ambient spins
+        this.spinCycleStart = -1;
+        this.isHovered = false;
+        this.lastAmbientSpinTime = performance.now();
+
+        // Drag tracking
         this.isDragging = false;
         this.dragStartX = 0;
         this.dragStartRot = 0;
         this.lastDragX = 0;
         this.lastDragTime = 0;
+        this.dragRotOffset = 0;
+        this.dragVelocity = 0;
 
-        this.tiltX = 0;
-        this.tiltY = 0;
-        this.targetTiltX = 0;
-        this.targetTiltY = 0;
+        // Springs from Kallpa repo for organic physical response
+        this.liftSpring = new SpringValue(0, 90, 12);
+        this.tiltSpring = new SpringValue(0, 80, 14);
+        this.pullXSpring = new SpringValue(0, 70, 13);
+        this.pullYSpring = new SpringValue(0, 70, 13);
+        this.centerBlendSpring = new SpringValue(0, 80, 14);
+
+        // Global cursor position
+        this.cursorX = window.innerWidth / 2;
+        this.cursorY = window.innerHeight / 2;
 
         this.initialized = false;
         this.initThree();
@@ -3271,10 +3310,7 @@
           cylTop: 0.092,
           cylBot: 0.925,
           cylWidth: 0.764,
-          cylCurv: 2.2,
-          lightInt: 1.8,
-          lightAmb: 0.45,
-          lightX: -0.9
+          cylCurv: 2.2
         };
 
         // Render directly into the visible canvas with hardware WebGL
@@ -3307,7 +3343,7 @@
         keyLight.position.set(-0.6, 0.9, 2.2);
         this.scene.add(keyLight);
 
-        // Very subtle warm contour rim (soft 0.2, no blown-out neon streaks)
+        // Very subtle warm contour rim
         const rimLight = new THREE.DirectionalLight(0xfff3e0, 0.20);
         rimLight.position.set(1.2, 0.3, 1.2);
         this.scene.add(rimLight);
@@ -3342,7 +3378,7 @@
 
         // Texture loader for Kallpa original label
         this.textureLoader = new THREE.TextureLoader();
-        this.uOffset = { value: this.rotOffset };
+        this.uOffset = { value: this.baseRot };
 
         this.labelTexture = this.textureLoader.load(KALLPA_LABEL_URL, (tex) => {
           tex.wrapS = THREE.RepeatWrapping;
@@ -3391,75 +3427,160 @@
       bindEvents() {
         if (!this.card) return;
 
+        // Hover events matching Kallpa repo
+        this.card.addEventListener('pointerenter', () => {
+          this.isHovered = true;
+          this.liftSpring.target = 1.0;
+          if (this.spinCycleStart < 0) {
+            this.spinCycleStart = performance.now();
+          }
+        });
+
+        this.card.addEventListener('pointerleave', () => {
+          this.isHovered = false;
+          this.liftSpring.target = 0.0;
+          this.pullXSpring.target = 0.0;
+          this.pullYSpring.target = 0.0;
+          // Do NOT cancel spinCycleStart: let it finish its 360° turn smoothly
+        });
+
+        // Global cursor tracking for magnetic pull
+        window.addEventListener('pointermove', (e) => {
+          this.cursorX = e.clientX;
+          this.cursorY = e.clientY;
+        }, { passive: true });
+
+        // Drag / touch interaction
         const onStart = (clientX) => {
           this.isDragging = true;
           this.dragStartX = clientX;
-          this.dragStartRot = this.rotOffset;
+          this.dragStartRot = this.dragRotOffset;
           this.lastDragX = clientX;
           this.lastDragTime = performance.now();
-          this.rotVelocity = 0;
+          this.dragVelocity = 0;
         };
 
-        const onMove = (clientX, clientY) => {
-          if (this.isDragging) {
-            const dx = clientX - this.dragStartX;
-            this.rotOffset = ((this.dragStartRot - dx * 0.0025) % 1.0 + 1.0) % 1.0;
-            const now = performance.now();
-            const dt = Math.max(1, now - this.lastDragTime);
-            this.rotVelocity = -((clientX - this.lastDragX) * 0.0025) / dt * 16;
-            this.lastDragX = clientX;
-            this.lastDragTime = now;
-          }
-
-          // Tilt towards cursor
-          const rect = this.card.getBoundingClientRect();
-          const cx = rect.left + rect.width / 2;
-          const cy = rect.top + rect.height / 2;
-          this.targetTiltY = ((clientX - cx) / (window.innerWidth * 0.5)) * 14;
-          this.targetTiltX = -((clientY - cy) / (window.innerHeight * 0.5)) * 10;
+        const onMove = (clientX) => {
+          if (!this.isDragging) return;
+          const dx = clientX - this.dragStartX;
+          this.dragRotOffset = this.dragStartRot - dx * 0.0025;
+          const now = performance.now();
+          const dt = Math.max(1, now - this.lastDragTime);
+          this.dragVelocity = -((clientX - this.lastDragX) * 0.0025) / dt * 16;
+          this.lastDragX = clientX;
+          this.lastDragTime = now;
         };
 
         const onEnd = () => {
+          if (!this.isDragging) return;
           this.isDragging = false;
         };
 
         this.card.addEventListener('mousedown', e => onStart(e.clientX));
-        window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
+        window.addEventListener('mousemove', e => onMove(e.clientX));
         window.addEventListener('mouseup', onEnd);
 
         this.card.addEventListener('touchstart', e => {
           if (e.touches.length > 0) onStart(e.touches[0].clientX);
         }, { passive: true });
         window.addEventListener('touchmove', e => {
-          if (e.touches.length > 0) onMove(e.touches[0].clientX, e.touches[0].clientY);
+          if (e.touches.length > 0) onMove(e.touches[0].clientX);
         }, { passive: true });
         window.addEventListener('touchend', onEnd);
       }
 
-      update(now, dt) {
+      update(now, dtMs) {
         if (!this.initialized || state.theme !== 'kallpa') return;
+        const dt = Math.min(0.04, Math.max(0.001, (dtMs || 16) / 1000));
 
-        // Damping and continuous ambient rotation
+        // 1. Spontaneous Ambient Spin Check (every ~6.5s when idle, single 360° turn)
+        if (this.isDragging || this.isHovered || this.spinCycleStart >= 0) {
+          this.lastAmbientSpinTime = now;
+        } else if (now - this.lastAmbientSpinTime > this.ambientSpinInterval) {
+          this.lastAmbientSpinTime = now;
+          this.spinCycleStart = now;
+        }
+
+        // 2. Cursor Proximity & Magnetic Pull (from Kallpa repo)
+        const rect = this.card.getBoundingClientRect();
+        const canCenterX = rect.left + rect.width / 2;
+        const canCenterY = rect.top + rect.height / 2;
+        const distToCursorX = this.cursorX - canCenterX;
+        const distToCursorY = this.cursorY - canCenterY;
+        const distToCursor = Math.hypot(distToCursorX, distToCursorY);
+        const proximity = Math.max(0, 1 - distToCursor / 450);
+
+        this.centerBlendSpring.target = proximity;
+        this.centerBlendSpring.update(dt);
+
+        // Breathing idle wave
+        const breath = Math.sin(now * 0.0018) * 12;
+
+        // Magnetic pull target
+        const normCursorX = (this.cursorX / window.innerWidth - 0.5) * 2;
+        const normCursorY = (this.cursorY / window.innerHeight - 0.5) * 2;
+        const pullTargetX = proximity * (distToCursorX * 0.16) + (normCursorX * 12);
+        const pullTargetY = proximity * (distToCursorY * 0.16) + (normCursorY * 8);
+        this.pullXSpring.target = pullTargetX;
+        this.pullYSpring.target = pullTargetY;
+
+        // Cursor lean tilt
+        const cursorLean = (distToCursorX / window.innerWidth) * 8 * (0.4 + 0.6 * proximity);
+        this.tiltSpring.target = cursorLean;
+
+        // Update springs
+        this.liftSpring.update(dt);
+        this.tiltSpring.update(dt);
+        this.pullXSpring.update(dt);
+        this.pullYSpring.update(dt);
+
+        const liftVal = this.liftSpring.value;
+        const tiltVal = this.tiltSpring.value;
+        const pullX = this.pullXSpring.value;
+        const pullY = this.pullYSpring.value;
+
+        // Apply 3D card transform matching Kallpa repo
+        const finalY = -liftVal * 24 + pullY + breath;
+        const finalScale = 1 + liftVal * 0.06 + proximity * 0.03;
+        this.card.style.transform = `translate3d(${pullX.toFixed(2)}px, ${finalY.toFixed(2)}px, 0) rotate(${tiltVal.toFixed(2)}deg) scale(${finalScale.toFixed(3)})`;
+
+        // 3. Rotation Offset: does NOT spin constantly, settles facing camera!
+        let spinOffset = 0;
+        if (this.spinCycleStart >= 0) {
+          const elapsed = now - this.spinCycleStart;
+          const progress = Math.min(1, elapsed / this.spinDuration);
+
+          // Smooth cubic easeInOut curve from Kallpa repo
+          const eased = progress < 0.5
+            ? 4 * progress * progress * progress
+            : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+          spinOffset = eased * 1.0; // 1 full turn (360°)
+
+          if (progress >= 1) {
+            if (this.isHovered) {
+              this.spinCycleStart = now; // Continuous smooth spin while cursor stays hovering
+            } else {
+              this.spinCycleStart = -1; // Settle perfectly centered facing camera!
+            }
+          }
+        }
+
+        // Drag inertia decay
         if (!this.isDragging) {
-          this.rotVelocity *= Math.pow(0.92, dt / 16);
-          const ambientSpeed = 0.00016; // Continuous smooth spin
-          this.rotOffset = ((this.rotOffset + this.rotVelocity + ambientSpeed * dt) % 1.0 + 1.0) % 1.0;
+          this.dragVelocity *= Math.pow(0.92, (dtMs || 16) / 16);
+          this.dragRotOffset += this.dragVelocity;
         }
 
-        // Apply rotation to shader uniform and texture offset
-        this.uOffset.value = this.rotOffset;
+        const totalRot = (this.baseRot + spinOffset + this.dragRotOffset) % 1.0;
+        const finalOffset = (totalRot + 1.0) % 1.0;
+
+        // Update shader uniform and mesh rotation
+        this.uOffset.value = finalOffset;
         if (this.labelTexture) {
-          this.labelTexture.offset.x = this.rotOffset;
+          this.labelTexture.offset.x = finalOffset;
         }
-        this.mesh.rotation.y = this.rotOffset * Math.PI * 2;
-
-        // Smooth tilt and floating vertical bob
-        const k = 1 - Math.exp(-dt / 80);
-        this.tiltX += (this.targetTiltX - this.tiltX) * k;
-        this.tiltY += (this.targetTiltY - this.tiltY) * k;
-        const bob = Math.sin(now * 0.0016) * 7;
-
-        this.card.style.transform = `translateY(${bob.toFixed(2)}px) rotateX(${this.tiltX.toFixed(2)}deg) rotateY(${this.tiltY.toFixed(2)}deg)`;
+        this.mesh.rotation.y = finalOffset * Math.PI * 2;
 
         // Render directly to WebGL canvas
         this.renderer.render(this.scene, this.camera);
@@ -3481,10 +3602,10 @@
     const updateHintsUI = () => {
       if (state.theme === 'kallpa') {
         hintType.textContent = 'lata 3d kallpa';
-        hintTap.textContent = 'arrastra para rotar la lata';
+        hintTap.textContent = 'pasa el cursor para girar 360°';
         hintCut.textContent = 'electricidad procedural';
-        hintWither.textContent = 'rotación continua 360°';
-        hintWitherC.textContent = '360°';
+        hintWither.textContent = 'atracción magnética';
+        hintWitherC.textContent = 'kallpa';
         hintClear.textContent = 'energía andina';
         hintClearC.textContent = 'kallpa';
       } else if (state.theme === 'electric') {
