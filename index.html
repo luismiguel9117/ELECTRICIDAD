@@ -157,7 +157,7 @@
       transform-style: preserve-3d;
       will-change: transform;
       transition: filter 0.25s ease;
-      filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 25px rgba(245, 158, 11, 0.12));
+      filter: drop-shadow(0 20px 45px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 15px rgba(245, 158, 11, 0.1));
     }
     .kallpa-card:active {
       cursor: grabbing;
@@ -187,7 +187,8 @@
       height: 100%;
       object-fit: contain;
       pointer-events: none;
-      opacity: 0.35;
+      mix-blend-mode: screen;
+      opacity: 0.50;
     }
 
     .kallpa-front-canvas {
@@ -636,7 +637,7 @@
 
       <!-- Drag / Interact Hint -->
       <div class="kallpa-drag-hint">
-        <span>⚡ Pasa el cursor o arrastra para activar rotación 360° ⚡</span>
+        <span>⚡ Arrastra la lata para rotar en 3D ⚡</span>
       </div>
     </div>
 
@@ -2092,10 +2093,10 @@
         g.fillStyle = '#050505';
         g.fillRect(0, 0, W, H);
 
-        // Subtle ambient radial amber aura behind can
+        // Ambient radial amber aura behind can
         const bgGlow = g.createRadialGradient(W / 2, H / 2, 40, W / 2, H / 2, Math.max(W, H) * 0.45);
-        bgGlow.addColorStop(0, 'rgba(245, 158, 11, 0.08)');
-        bgGlow.addColorStop(0.35, 'rgba(255, 213, 0, 0.02)');
+        bgGlow.addColorStop(0, 'rgba(245, 158, 11, 0.16)');
+        bgGlow.addColorStop(0.35, 'rgba(255, 213, 0, 0.05)');
         bgGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
         g.fillStyle = bgGlow;
         g.fillRect(0, 0, W, H);
@@ -2954,7 +2955,7 @@
       constructor(slotId, startDelay = 0) {
         this.slotId = slotId;
         this.t0 = performance.now() + startDelay;
-        this.duration = 3200 + Math.random() * 1400; // 3.2s to 4.6s lifespan
+        this.duration = 1350 + Math.random() * 450; // Faster, dynamic 1.35s - 1.8s lifespan
         this.seed = Math.floor(Math.random() * 100000);
         this.zone = slotId % 6;
         this.buildPath();
@@ -2962,7 +2963,7 @@
 
       reset(now, nextZone) {
         this.t0 = now;
-        this.duration = 3000 + Math.random() * 1500;
+        this.duration = 1300 + Math.random() * 450;
         this.seed = Math.floor(Math.random() * 100000);
         this.zone = nextZone != null ? nextZone : Math.floor(Math.random() * 6);
         this.buildPath();
@@ -2981,64 +2982,64 @@
           // Upper Crown (Shoulders & Lid sparking UPWARD and outward into air)
           const side = r() > 0.5 ? 1 : -1;
           waypoints = [
-            { u: side * (0.3 + r() * 0.3), v: -0.72 + r() * 0.1, z: 0.2 },
-            { u: side * (0.55 + r() * 0.35), v: -0.88 - r() * 0.15, z: -0.3 },
-            { u: side * (0.8 + r() * 0.5), v: -1.05 - r() * 0.3, z: -0.8 },
-            { u: side * (1.1 + r() * 0.6), v: -1.25 - r() * 0.45, z: -1.0 }
+            { u: side * (0.25 + r() * 0.25), v: -0.74 + r() * 0.08, z: 0.2 },
+            { u: side * (0.50 + r() * 0.25), v: -0.88 - r() * 0.12, z: -0.2 },
+            { u: side * (0.75 + r() * 0.35), v: -1.05 - r() * 0.22, z: -0.6 },
+            { u: side * (1.00 + r() * 0.45), v: -1.22 - r() * 0.35, z: -0.9 }
           ];
         } else if (z === 1) {
-          // Downward Base Grounding (Striking DOWNWARD from bottom chime into the floor)
+          // Downward Base Grounding (Striking DOWNWARD from bottom chime into floor)
           const side = r() > 0.5 ? 1 : -1;
           waypoints = [
-            { u: side * (0.2 + r() * 0.4), v: 0.78 + r() * 0.08, z: 0.4 },
-            { u: side * (0.45 + r() * 0.4), v: 0.95 + r() * 0.12, z: 0.1 },
-            { u: side * (0.7 + r() * 0.5), v: 1.15 + r() * 0.22, z: -0.4 },
-            { u: side * (0.9 + r() * 0.6), v: 1.35 + r() * 0.35, z: -0.8 }
+            { u: side * (0.20 + r() * 0.3), v: 0.80 + r() * 0.06, z: 0.3 },
+            { u: side * (0.42 + r() * 0.3), v: 0.95 + r() * 0.10, z: 0.1 },
+            { u: side * (0.68 + r() * 0.35), v: 1.12 + r() * 0.18, z: -0.4 },
+            { u: side * (0.85 + r() * 0.45), v: 1.30 + r() * 0.28, z: -0.8 }
           ];
         } else if (z === 2) {
           // Diagonal Wrap Down (Upper-Left Behind -> Front Center -> Lower-Right Behind)
           const dir = r() > 0.5 ? 1 : -1;
           waypoints = [
-            { u: -dir * (0.95 + r() * 0.2), v: -0.65 - r() * 0.2, z: -0.7 },
-            { u: -dir * (0.6 + r() * 0.2), v: -0.35 + r() * 0.15, z: -0.1 },
-            { u: 0.0 + (r() - 0.5) * 0.3, v: 0.0 + (r() - 0.5) * 0.2, z: 0.8 },
-            { u: dir * (0.65 + r() * 0.2), v: 0.38 + r() * 0.15, z: 0.2 },
-            { u: dir * (1.05 + r() * 0.25), v: 0.68 + r() * 0.2, z: -0.6 }
+            { u: -dir * (0.92 + r() * 0.18), v: -0.62 - r() * 0.18, z: -0.7 },
+            { u: -dir * (0.55 + r() * 0.18), v: -0.32 + r() * 0.12, z: -0.1 },
+            { u: 0.0 + (r() - 0.5) * 0.25, v: 0.0 + (r() - 0.5) * 0.18, z: 0.8 },
+            { u: dir * (0.60 + r() * 0.18), v: 0.35 + r() * 0.12, z: 0.2 },
+            { u: dir * (0.98 + r() * 0.20), v: 0.65 + r() * 0.18, z: -0.6 }
           ];
         } else if (z === 3) {
           // Diagonal Wrap Up (Lower-Left Behind -> Front Center -> Upper-Right Behind)
           const dir = r() > 0.5 ? 1 : -1;
           waypoints = [
-            { u: -dir * (1.0 + r() * 0.2), v: 0.62 + r() * 0.18, z: -0.6 },
-            { u: -dir * (0.55 + r() * 0.2), v: 0.28 + r() * 0.15, z: 0.2 },
-            { u: 0.05 * dir, v: -0.05 + (r() - 0.5) * 0.2, z: 0.9 },
-            { u: dir * (0.62 + r() * 0.2), v: -0.38 + r() * 0.15, z: 0.1 },
-            { u: dir * (1.05 + r() * 0.25), v: -0.7 + r() * 0.18, z: -0.7 }
+            { u: -dir * (0.95 + r() * 0.18), v: 0.60 + r() * 0.16, z: -0.6 },
+            { u: -dir * (0.52 + r() * 0.18), v: 0.26 + r() * 0.12, z: 0.2 },
+            { u: 0.04 * dir, v: -0.04 + (r() - 0.5) * 0.18, z: 0.9 },
+            { u: dir * (0.58 + r() * 0.18), v: -0.35 + r() * 0.12, z: 0.1 },
+            { u: dir * (0.98 + r() * 0.20), v: -0.68 + r() * 0.16, z: -0.7 }
           ];
         } else if (z === 4) {
           // Left Lateral Rim & Flank Hugging Arc
           waypoints = [
-            { u: -0.85 - r() * 0.15, v: -0.55 + r() * 0.15, z: -0.3 },
-            { u: -1.02 - r() * 0.2, v: -0.15 + r() * 0.15, z: 0.2 },
-            { u: -0.98 - r() * 0.18, v: 0.22 + r() * 0.15, z: 0.4 },
-            { u: -0.88 - r() * 0.15, v: 0.6 + r() * 0.15, z: -0.2 }
+            { u: -0.82 - r() * 0.12, v: -0.52 + r() * 0.12, z: -0.3 },
+            { u: -0.98 - r() * 0.16, v: -0.14 + r() * 0.12, z: 0.2 },
+            { u: -0.95 - r() * 0.15, v: 0.20 + r() * 0.12, z: 0.4 },
+            { u: -0.85 - r() * 0.12, v: 0.58 + r() * 0.12, z: -0.2 }
           ];
         } else {
           // Right Lateral Rim & Flank Hugging Arc
           waypoints = [
-            { u: 0.85 + r() * 0.15, v: -0.52 + r() * 0.15, z: -0.3 },
-            { u: 1.02 + r() * 0.2, v: -0.12 + r() * 0.15, z: 0.2 },
-            { u: 0.98 + r() * 0.18, v: 0.25 + r() * 0.15, z: 0.4 },
-            { u: 0.88 + r() * 0.15, v: 0.62 + r() * 0.15, z: -0.2 }
+            { u: 0.82 + r() * 0.12, v: -0.50 + r() * 0.12, z: -0.3 },
+            { u: 0.98 + r() * 0.16, v: -0.10 + r() * 0.12, z: 0.2 },
+            { u: 0.95 + r() * 0.15, v: 0.22 + r() * 0.12, z: 0.4 },
+            { u: 0.85 + r() * 0.12, v: 0.60 + r() * 0.12, z: -0.2 }
           ];
         }
 
-        // Subdivide waypoints into an angular parametric electric lightning path
+        // Subdivide waypoints into high-voltage angular lightning with dual-frequency jitter
         const pts = [];
         for (let i = 0; i < waypoints.length - 1; i++) {
           const p1 = waypoints[i];
           const p2 = waypoints[i + 1];
-          const segs = 7 + Math.floor(r() * 4);
+          const segs = 8 + Math.floor(r() * 4);
           const dx = p2.u - p1.u, dy = p2.v - p1.v, dz = p2.z - p1.z;
           const len = Math.hypot(dx, dy) || 1;
           const nx = -dy / len, ny = dx / len;
@@ -3046,9 +3047,12 @@
           for (let s = 0; s <= segs; s++) {
             if (i > 0 && s === 0) continue;
             const t = s / segs;
-            // Deterministic angular displacement (no frame-by-frame noise)
             const env = Math.sin(t * Math.PI);
-            const jitterAmp = (r() - 0.5) * 0.18 * env;
+            // High-voltage sharp zig-zag harmonics
+            const harmonic = Math.sin(t * Math.PI * 6 + r() * 6) * 0.05 * env;
+            const sharpJitter = (r() - 0.5) * 0.11 * env;
+            const jitterAmp = harmonic + sharpJitter;
+
             const u = p1.u + dx * t + nx * jitterAmp;
             const v = p1.v + dy * t + ny * jitterAmp;
             const z = p1.z + dz * t;
@@ -3057,24 +3061,23 @@
         }
         this.points = pts;
 
-        // Create 1 or 2 small sub-branches (depth 1)
+        // 1 or 2 high-energy sub-branches
         this.branches = [];
-        const numBranches = r() > 0.35 ? (r() > 0.65 ? 2 : 1) : 0;
+        const numBranches = r() > 0.4 ? (r() > 0.7 ? 2 : 1) : 0;
         for (let b = 0; b < numBranches; b++) {
-          const forkIdx = Math.floor(pts.length * (0.28 + r() * 0.45));
+          const forkIdx = Math.floor(pts.length * (0.28 + r() * 0.42));
           const forkPt = pts[forkIdx];
           const nextPt = pts[Math.min(pts.length - 1, forkIdx + 1)];
           const bdx = nextPt.u - forkPt.u, bdy = nextPt.v - forkPt.v;
-          const blen = Math.hypot(bdx, bdy) || 1;
-          const angle = Math.atan2(bdy, bdx) + (r() > 0.5 ? 0.6 : -0.6) + (r() - 0.5) * 0.3;
-          const branchLen = (0.25 + r() * 0.3);
-          const bSegs = 4 + Math.floor(r() * 3);
+          const angle = Math.atan2(bdy, bdx) + (r() > 0.5 ? 0.65 : -0.65) + (r() - 0.5) * 0.25;
+          const branchLen = (0.22 + r() * 0.25);
+          const bSegs = 5 + Math.floor(r() * 3);
           const bPts = [{ u: forkPt.u, v: forkPt.v, z: forkPt.z }];
 
           for (let s = 1; s <= bSegs; s++) {
             const bt = s / bSegs;
             const dist = branchLen * bt;
-            const jit = (r() - 0.5) * 0.08 * Math.sin(bt * Math.PI);
+            const jit = (r() - 0.5) * 0.07 * Math.sin(bt * Math.PI);
             const bu = forkPt.u + Math.cos(angle) * dist - Math.sin(angle) * jit;
             const bv = forkPt.v + Math.sin(angle) * dist + Math.cos(angle) * jit;
             bPts.push({ u: bu, v: bv, z: forkPt.z });
@@ -3091,53 +3094,45 @@
         if (elapsed < 0) return; // not yet born
         const prog = elapsed / this.duration;
         if (prog >= 1.0) {
-          // Reincarnate at a new position
-          this.reset(now + Math.random() * 250);
+          // Reincarnate quickly at a new zone
+          this.reset(now + Math.random() * 120);
           return;
         }
 
-        // Timeline phases:
-        // 0.00 -> 0.38 : Growth (head advances from 0 to 1, tail at 0)
-        // 0.38 -> 0.66 : Steady linger (head 1, tail 0, subtle harmonic vibration)
-        // 0.66 -> 1.00 : Progressive tail retraction & fade (tail advances from 0 to 1, opacity fades out)
-        let head = 1, tail = 0, alpha = 1;
-        if (prog < 0.38) {
-          head = prog / 0.38;
-          tail = 0;
-          alpha = Math.min(1, prog / 0.08);
-        } else if (prog <= 0.66) {
-          head = 1;
-          tail = 0;
-          alpha = 1;
-        } else {
-          head = 1;
-          tail = (prog - 0.66) / 0.34;
-          alpha = Math.max(0, 1 - tail);
-        }
+        // TRAVELING ELECTRIC SURGE:
+        // - Head finishes reaching 100% of the path at prog = 0.65
+        // - Tail STARTS MOVING at prog = 0.36 (when head is at ~55%, poco antes de culminar su recorrido!)
+        // - This ensures the origin point lifts and chases the head instead of staying stuck!
+        const head = Math.min(1, prog / 0.65);
+        const tail = prog < 0.36 ? 0 : Math.min(1, (prog - 0.36) / 0.64);
 
-        if (alpha <= 0.005 || tail >= head) return;
+        if (tail >= head) return;
 
-        // Subtle micro-pulse
-        const pulse = 1.0 + 0.12 * Math.sin(now * 0.015 + this.seed);
-        const curAlpha = Math.min(1, alpha * pulse);
+        // Fast strike-in fade (60ms) and clean dissolve towards the end
+        const fadeIn = Math.min(1, elapsed / 60);
+        const fadeOut = prog < 0.72 ? 1.0 : Math.max(0, (1.0 - prog) / 0.28);
+        const pulse = 1.0 + 0.14 * Math.sin(now * 0.025 + this.seed);
+        const curAlpha = Math.min(1, fadeIn * fadeOut * pulse);
+
+        if (curAlpha <= 0.01) return;
 
         const totalPts = this.points.length;
         const startIdx = Math.max(0, Math.floor(tail * (totalPts - 1)));
         const endIdx = Math.min(totalPts - 1, Math.ceil(head * (totalPts - 1)));
         if (endIdx <= startIdx) return;
 
-        // Draw primary backbone path filtered by layer
+        // Draw primary backbone path filtered by layer (Layer 0 behind can, Layer 1 in front)
         this.renderSegmentList(ctx, targetLayer, this.points, startIdx, endIdx, curAlpha, cx, cy, canW, canH, 1.0);
 
         // Draw branches if growth has reached their fork point
         for (const br of this.branches) {
-          if (head >= br.forkFrac && tail < br.forkFrac) {
-            const brProg = Math.min(1, (head - br.forkFrac) / 0.25);
-            const brTail = Math.min(1, Math.max(0, (tail - br.forkFrac) / 0.25));
+          if (head >= br.forkFrac && tail < br.forkFrac + 0.25) {
+            const brProg = Math.min(1, (head - br.forkFrac) / 0.22);
+            const brTail = tail < br.forkFrac ? 0 : Math.min(1, (tail - br.forkFrac) / 0.25);
             const brEndIdx = Math.min(br.points.length - 1, Math.ceil(brProg * (br.points.length - 1)));
             const brStartIdx = Math.max(0, Math.floor(brTail * (br.points.length - 1)));
             if (brEndIdx > brStartIdx) {
-              this.renderSegmentList(ctx, targetLayer, br.points, brStartIdx, brEndIdx, curAlpha * 0.85, cx, cy, canW, canH, 0.7);
+              this.renderSegmentList(ctx, targetLayer, br.points, brStartIdx, brEndIdx, curAlpha * 0.88, cx, cy, canW, canH, 0.75);
             }
           }
         }
@@ -3180,27 +3175,27 @@
         ctx.lineJoin = 'miter';
         ctx.miterLimit = 3;
 
-        // 1. Soft Amber/Yellow Ambient Glow
+        // 1. Soft Ambient Yellow Glow
         ctx.beginPath();
         ctx.moveTo(path[0].x, path[0].y);
         for (let i = 1; i < path.length; i++) ctx.lineTo(path[i].x, path[i].y);
-        ctx.strokeStyle = `rgba(255, 213, 0, ${(0.18 * alpha).toFixed(3)})`;
-        ctx.lineWidth = 7.0 * scaleWidth;
+        ctx.strokeStyle = `rgba(255, 213, 0, ${(0.22 * alpha).toFixed(3)})`;
+        ctx.lineWidth = 6.0 * scaleWidth;
         ctx.stroke();
 
         // 2. High-energy Yellow Mid-Stroke (#FFD500)
         ctx.beginPath();
         ctx.moveTo(path[0].x, path[0].y);
         for (let i = 1; i < path.length; i++) ctx.lineTo(path[i].x, path[i].y);
-        ctx.strokeStyle = `rgba(255, 213, 0, ${(0.9 * alpha).toFixed(3)})`;
-        ctx.lineWidth = 2.4 * scaleWidth;
+        ctx.strokeStyle = `rgba(255, 213, 0, ${(0.92 * alpha).toFixed(3)})`;
+        ctx.lineWidth = 2.2 * scaleWidth;
         ctx.stroke();
 
-        // 3. Crisp Pure Core (#FFF8CC / White core, 1.1px)
+        // 3. Crisp Pure White Electric Core (No dots, clean angular path)
         ctx.beginPath();
         ctx.moveTo(path[0].x, path[0].y);
         for (let i = 1; i < path.length; i++) ctx.lineTo(path[i].x, path[i].y);
-        ctx.strokeStyle = `rgba(255, 250, 220, ${(0.95 * alpha).toFixed(3)})`;
+        ctx.strokeStyle = `rgba(255, 255, 255, ${(0.95 * alpha).toFixed(3)})`;
         ctx.lineWidth = 1.1 * scaleWidth;
         ctx.stroke();
 
@@ -3210,12 +3205,12 @@
 
     class CanElectricEngine {
       constructor() {
-        // 4 concurrent asynchronous arcs, staggered at startup
+        // 4 concurrent asynchronous arcs, staggered at startup for fast dynamic rhythm
         this.arcs = [
           new CanElectricArc(0, 0),
-          new CanElectricArc(1, 950),
-          new CanElectricArc(2, 1900),
-          new CanElectricArc(3, 2850)
+          new CanElectricArc(1, 380),
+          new CanElectricArc(2, 760),
+          new CanElectricArc(3, 1140)
         ];
       }
 
@@ -3233,66 +3228,27 @@
 
     let canElectricEngine = null;
 
-    // ---------- SPRING VALUE (PHYSICS ENGINE FROM KALLPA REPO) ----------
-    class SpringValue {
-      constructor(initial = 0, stiffness = 100, damping = 14) {
-        this.value = initial;
-        this.target = initial;
-        this.velocity = 0;
-        this.stiffness = stiffness;
-        this.damping = damping;
-      }
-
-      update(dt) {
-        const force = (this.target - this.value) * this.stiffness;
-        const dampingForce = -this.velocity * this.damping;
-        const acceleration = force + dampingForce;
-        this.velocity += acceleration * dt;
-        this.value += this.velocity * dt;
-
-        if (Math.abs(this.velocity) < 0.0005 && Math.abs(this.target - this.value) < 0.0005) {
-          this.value = this.target;
-          this.velocity = 0;
-        }
-        return this.value;
-      }
-    }
-
-    // ---------- 3D KALLPA CAN EXPERIENCE (ANIMATION SYSTEM FROM KALLPA REPOSITORY) ----------
+    // ---------- 3D KALLPA CAN EXPERIENCE (THREE.JS HARDWARE WEBGL) ----------
     const KALLPA_LABEL_URL = 'assets/kalpa-label.png';
 
     class KallpaCanExperience {
       constructor() {
         this.card = document.getElementById('kallpaCard');
         this.canvas = document.getElementById('kallpaCanvas');
-        this.baseRot = 0.475; // Centers "KALPA" logo facing camera
+        this.rotOffset = 0.475; // Initial rotation centering "KALPA" logo facing camera
+        this.rotVelocity = 0;
 
-        // Timers & config matching Kallpa repo
-        this.spinDuration = 2200; // ms for a complete 360° turn
-        this.ambientSpinInterval = 6500; // ms between spontaneous ambient spins
-        this.spinCycleStart = -1;
-        this.isHovered = false;
-        this.lastAmbientSpinTime = performance.now();
-
-        // Drag tracking
+        // Interaction state
         this.isDragging = false;
         this.dragStartX = 0;
         this.dragStartRot = 0;
         this.lastDragX = 0;
         this.lastDragTime = 0;
-        this.dragRotOffset = 0;
-        this.dragVelocity = 0;
 
-        // Springs from Kallpa repo for organic physical response
-        this.liftSpring = new SpringValue(0, 90, 12);
-        this.tiltSpring = new SpringValue(0, 80, 14);
-        this.pullXSpring = new SpringValue(0, 70, 13);
-        this.pullYSpring = new SpringValue(0, 70, 13);
-        this.centerBlendSpring = new SpringValue(0, 80, 14);
-
-        // Global cursor position
-        this.cursorX = window.innerWidth / 2;
-        this.cursorY = window.innerHeight / 2;
+        this.tiltX = 0;
+        this.tiltY = 0;
+        this.targetTiltX = 0;
+        this.targetTiltY = 0;
 
         this.initialized = false;
         this.initThree();
@@ -3334,19 +3290,23 @@
         );
         this.camera.position.z = 5;
 
-        // Soft, balanced studio lighting without harsh specular glare or neon side stripes
+        // Balanced, natural lighting that illuminates the label evenly without harsh overexposure
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.95);
         this.scene.add(ambientLight);
 
-        // Gentle front-top directional key light for clear, crisp label readability
-        const keyLight = new THREE.DirectionalLight(0xffffff, 0.35);
-        keyLight.position.set(-0.6, 0.9, 2.2);
+        // Soft frontal key light (avoids harsh blown-out specular hotspot)
+        const keyLight = new THREE.DirectionalLight(0xffffff, 0.40);
+        keyLight.position.set(-0.6, 0.6, 2.0);
         this.scene.add(keyLight);
 
-        // Very subtle warm contour rim
-        const rimLight = new THREE.DirectionalLight(0xfff3e0, 0.20);
-        rimLight.position.set(1.2, 0.3, 1.2);
-        this.scene.add(rimLight);
+        // Subtle amber edge rims for metallic contour definition
+        const leftAmberRim = new THREE.DirectionalLight(0xf59e0b, 0.55);
+        leftAmberRim.position.set(-1.8, 0.2, 0.5);
+        this.scene.add(leftAmberRim);
+
+        const rightAmberRim = new THREE.DirectionalLight(0xea580c, 0.45);
+        rightAmberRim.position.set(1.8, -0.2, 0.5);
+        this.scene.add(rightAmberRim);
 
         // Cylindrical Lathe Geometry accurately contoured to the can's shoulder & base
         const totalH = this.config.cylBot - this.config.cylTop;
@@ -3378,7 +3338,7 @@
 
         // Texture loader for Kallpa original label
         this.textureLoader = new THREE.TextureLoader();
-        this.uOffset = { value: this.baseRot };
+        this.uOffset = { value: this.rotOffset };
 
         this.labelTexture = this.textureLoader.load(KALLPA_LABEL_URL, (tex) => {
           tex.wrapS = THREE.RepeatWrapping;
@@ -3390,11 +3350,12 @@
         this.labelTexture.wrapS = THREE.RepeatWrapping;
         this.labelTexture.wrapT = THREE.ClampToEdgeWrapping;
 
+        // Matte satin aluminum material with balanced roughness to eliminate blinding reflections
         const material = new THREE.MeshStandardMaterial({
           map: this.labelTexture,
           side: THREE.FrontSide,
-          roughness: 0.65, // Soft satin finish: diffuses highlights naturally, prevents burned hotspots
-          metalness: 0.08, // Natural printed aluminum finish
+          roughness: 0.65,
+          metalness: 0.10,
           transparent: true
         });
 
@@ -3427,160 +3388,75 @@
       bindEvents() {
         if (!this.card) return;
 
-        // Hover events matching Kallpa repo
-        this.card.addEventListener('pointerenter', () => {
-          this.isHovered = true;
-          this.liftSpring.target = 1.0;
-          if (this.spinCycleStart < 0) {
-            this.spinCycleStart = performance.now();
-          }
-        });
-
-        this.card.addEventListener('pointerleave', () => {
-          this.isHovered = false;
-          this.liftSpring.target = 0.0;
-          this.pullXSpring.target = 0.0;
-          this.pullYSpring.target = 0.0;
-          // Do NOT cancel spinCycleStart: let it finish its 360° turn smoothly
-        });
-
-        // Global cursor tracking for magnetic pull
-        window.addEventListener('pointermove', (e) => {
-          this.cursorX = e.clientX;
-          this.cursorY = e.clientY;
-        }, { passive: true });
-
-        // Drag / touch interaction
         const onStart = (clientX) => {
           this.isDragging = true;
           this.dragStartX = clientX;
-          this.dragStartRot = this.dragRotOffset;
+          this.dragStartRot = this.rotOffset;
           this.lastDragX = clientX;
           this.lastDragTime = performance.now();
-          this.dragVelocity = 0;
+          this.rotVelocity = 0;
         };
 
-        const onMove = (clientX) => {
-          if (!this.isDragging) return;
-          const dx = clientX - this.dragStartX;
-          this.dragRotOffset = this.dragStartRot - dx * 0.0025;
-          const now = performance.now();
-          const dt = Math.max(1, now - this.lastDragTime);
-          this.dragVelocity = -((clientX - this.lastDragX) * 0.0025) / dt * 16;
-          this.lastDragX = clientX;
-          this.lastDragTime = now;
+        const onMove = (clientX, clientY) => {
+          if (this.isDragging) {
+            const dx = clientX - this.dragStartX;
+            this.rotOffset = ((this.dragStartRot - dx * 0.0025) % 1.0 + 1.0) % 1.0;
+            const now = performance.now();
+            const dt = Math.max(1, now - this.lastDragTime);
+            this.rotVelocity = -((clientX - this.lastDragX) * 0.0025) / dt * 16;
+            this.lastDragX = clientX;
+            this.lastDragTime = now;
+          }
+
+          // Tilt towards cursor
+          const rect = this.card.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          this.targetTiltY = ((clientX - cx) / (window.innerWidth * 0.5)) * 14;
+          this.targetTiltX = -((clientY - cy) / (window.innerHeight * 0.5)) * 10;
         };
 
         const onEnd = () => {
-          if (!this.isDragging) return;
           this.isDragging = false;
         };
 
         this.card.addEventListener('mousedown', e => onStart(e.clientX));
-        window.addEventListener('mousemove', e => onMove(e.clientX));
+        window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
         window.addEventListener('mouseup', onEnd);
 
         this.card.addEventListener('touchstart', e => {
           if (e.touches.length > 0) onStart(e.touches[0].clientX);
         }, { passive: true });
         window.addEventListener('touchmove', e => {
-          if (e.touches.length > 0) onMove(e.touches[0].clientX);
+          if (e.touches.length > 0) onMove(e.touches[0].clientX, e.touches[0].clientY);
         }, { passive: true });
         window.addEventListener('touchend', onEnd);
       }
 
-      update(now, dtMs) {
+      update(now, dt) {
         if (!this.initialized || state.theme !== 'kallpa') return;
-        const dt = Math.min(0.04, Math.max(0.001, (dtMs || 16) / 1000));
 
-        // 1. Spontaneous Ambient Spin Check (every ~6.5s when idle, single 360° turn)
-        if (this.isDragging || this.isHovered || this.spinCycleStart >= 0) {
-          this.lastAmbientSpinTime = now;
-        } else if (now - this.lastAmbientSpinTime > this.ambientSpinInterval) {
-          this.lastAmbientSpinTime = now;
-          this.spinCycleStart = now;
-        }
-
-        // 2. Cursor Proximity & Magnetic Pull (from Kallpa repo)
-        const rect = this.card.getBoundingClientRect();
-        const canCenterX = rect.left + rect.width / 2;
-        const canCenterY = rect.top + rect.height / 2;
-        const distToCursorX = this.cursorX - canCenterX;
-        const distToCursorY = this.cursorY - canCenterY;
-        const distToCursor = Math.hypot(distToCursorX, distToCursorY);
-        const proximity = Math.max(0, 1 - distToCursor / 450);
-
-        this.centerBlendSpring.target = proximity;
-        this.centerBlendSpring.update(dt);
-
-        // Breathing idle wave
-        const breath = Math.sin(now * 0.0018) * 12;
-
-        // Magnetic pull target
-        const normCursorX = (this.cursorX / window.innerWidth - 0.5) * 2;
-        const normCursorY = (this.cursorY / window.innerHeight - 0.5) * 2;
-        const pullTargetX = proximity * (distToCursorX * 0.16) + (normCursorX * 12);
-        const pullTargetY = proximity * (distToCursorY * 0.16) + (normCursorY * 8);
-        this.pullXSpring.target = pullTargetX;
-        this.pullYSpring.target = pullTargetY;
-
-        // Cursor lean tilt
-        const cursorLean = (distToCursorX / window.innerWidth) * 8 * (0.4 + 0.6 * proximity);
-        this.tiltSpring.target = cursorLean;
-
-        // Update springs
-        this.liftSpring.update(dt);
-        this.tiltSpring.update(dt);
-        this.pullXSpring.update(dt);
-        this.pullYSpring.update(dt);
-
-        const liftVal = this.liftSpring.value;
-        const tiltVal = this.tiltSpring.value;
-        const pullX = this.pullXSpring.value;
-        const pullY = this.pullYSpring.value;
-
-        // Apply 3D card transform matching Kallpa repo
-        const finalY = -liftVal * 24 + pullY + breath;
-        const finalScale = 1 + liftVal * 0.06 + proximity * 0.03;
-        this.card.style.transform = `translate3d(${pullX.toFixed(2)}px, ${finalY.toFixed(2)}px, 0) rotate(${tiltVal.toFixed(2)}deg) scale(${finalScale.toFixed(3)})`;
-
-        // 3. Rotation Offset: does NOT spin constantly, settles facing camera!
-        let spinOffset = 0;
-        if (this.spinCycleStart >= 0) {
-          const elapsed = now - this.spinCycleStart;
-          const progress = Math.min(1, elapsed / this.spinDuration);
-
-          // Smooth cubic easeInOut curve from Kallpa repo
-          const eased = progress < 0.5
-            ? 4 * progress * progress * progress
-            : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-
-          spinOffset = eased * 1.0; // 1 full turn (360°)
-
-          if (progress >= 1) {
-            if (this.isHovered) {
-              this.spinCycleStart = now; // Continuous smooth spin while cursor stays hovering
-            } else {
-              this.spinCycleStart = -1; // Settle perfectly centered facing camera!
-            }
-          }
-        }
-
-        // Drag inertia decay
+        // Damping and continuous ambient rotation
         if (!this.isDragging) {
-          this.dragVelocity *= Math.pow(0.92, (dtMs || 16) / 16);
-          this.dragRotOffset += this.dragVelocity;
+          this.rotVelocity *= Math.pow(0.92, dt / 16);
+          const ambientSpeed = 0.00016; // Continuous smooth spin
+          this.rotOffset = ((this.rotOffset + this.rotVelocity + ambientSpeed * dt) % 1.0 + 1.0) % 1.0;
         }
 
-        const totalRot = (this.baseRot + spinOffset + this.dragRotOffset) % 1.0;
-        const finalOffset = (totalRot + 1.0) % 1.0;
-
-        // Update shader uniform and mesh rotation
-        this.uOffset.value = finalOffset;
+        // Apply rotation to shader uniform and texture offset
+        this.uOffset.value = this.rotOffset;
         if (this.labelTexture) {
-          this.labelTexture.offset.x = finalOffset;
+          this.labelTexture.offset.x = this.rotOffset;
         }
-        this.mesh.rotation.y = finalOffset * Math.PI * 2;
+        this.mesh.rotation.y = this.rotOffset * Math.PI * 2;
+
+        // Smooth tilt and floating vertical bob
+        const k = 1 - Math.exp(-dt / 80);
+        this.tiltX += (this.targetTiltX - this.tiltX) * k;
+        this.tiltY += (this.targetTiltY - this.tiltY) * k;
+        const bob = Math.sin(now * 0.0016) * 7;
+
+        this.card.style.transform = `translateY(${bob.toFixed(2)}px) rotateX(${this.tiltX.toFixed(2)}deg) rotateY(${this.tiltY.toFixed(2)}deg)`;
 
         // Render directly to WebGL canvas
         this.renderer.render(this.scene, this.camera);
@@ -3602,10 +3478,10 @@
     const updateHintsUI = () => {
       if (state.theme === 'kallpa') {
         hintType.textContent = 'lata 3d kallpa';
-        hintTap.textContent = 'pasa el cursor para girar 360°';
+        hintTap.textContent = 'arrastra para rotar la lata';
         hintCut.textContent = 'electricidad procedural';
-        hintWither.textContent = 'atracción magnética';
-        hintWitherC.textContent = 'kallpa';
+        hintWither.textContent = 'rotación continua 360°';
+        hintWitherC.textContent = '360°';
         hintClear.textContent = 'energía andina';
         hintClearC.textContent = 'kallpa';
       } else if (state.theme === 'electric') {
