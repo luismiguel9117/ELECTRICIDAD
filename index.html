@@ -1294,55 +1294,65 @@
       const ELEC_HOLD_T = 280;
       const ELEC_CONTRACT_T = 880;
 
-      // Alternating 3D spiral direction between adjacent letters to break unidirectional sweep
       const isEven = (l.wi % 2 === 0);
-      let pts_helix, segs_helix;
+      const x_origin = (isEven ? -1 : 1) * w * 0.12 + (r() - 0.5) * 0.05;
+      const y_origin = -0.38 + (r() - 0.5) * 0.05;
 
-      if (isEven) {
-        // Upward spiral: bottom-left -> front piercing -> top-right
-        const p_base = [-w * 0.38 + (r() - 0.5) * 0.06, 0.06 + r() * 0.06];
-        const p_punc1 = [-w * 0.12, -0.26 + (r() - 0.5) * 0.05];
-        const p_midFace = [w * 0.14, -0.45 + (r() - 0.5) * 0.05];
-        const p_top = [-w * 0.06 + (r() - 0.5) * w * 0.2, -0.88 - r() * 0.25];
-        pts_helix = bez(p_base, p_punc1, p_midFace, p_top, 16);
-        segs_helix = [
-          { u0: 0, u1: 0.28, layer: 0 },
-          { u0: 0.28, u1: 0.68, layer: 1 },
-          { u0: 0.68, u1: 1.0, layer: 0 }
-        ];
-      } else {
-        // Downward / counter-spiral: top-right -> front piercing -> bottom-left
-        const p_top = [w * 0.34 + (r() - 0.5) * 0.06, -0.86 - r() * 0.25];
-        const p_punc1 = [w * 0.12, -0.46 + (r() - 0.5) * 0.05];
-        const p_midFace = [-w * 0.14, -0.28 + (r() - 0.5) * 0.05];
-        const p_base = [-w * 0.06 + (r() - 0.5) * w * 0.2, 0.06 + r() * 0.06];
-        pts_helix = bez(p_top, p_punc1, p_midFace, p_base, 16);
-        segs_helix = [
-          { u0: 0, u1: 0.28, layer: 0 },
-          { u0: 0.28, u1: 0.68, layer: 1 },
-          { u0: 0.68, u1: 1.0, layer: 0 }
-        ];
-      }
+      // 1. UPPER ELECTRICAL DISCHARGE: Grows UPWARDS from letter waist to crown & upper space
+      const p_up0 = [x_origin, y_origin];
+      const p_up1 = [-x_origin * 1.4, -0.58 + (r() - 0.5) * 0.05];
+      const p_up2 = [x_origin * 0.8, -0.76 + (r() - 0.5) * 0.05];
+      const p_up3 = [(isEven ? 1 : -1) * w * 0.22 + (r() - 0.5) * w * 0.2, -0.94 - r() * 0.22];
+      const pts_up = bez(p_up0, p_up1, p_up2, p_up3, 16);
+      const segs_up = [
+        { u0: 0, u1: 0.30, layer: 0 },
+        { u0: 0.30, u1: 0.70, layer: 1 },
+        { u0: 0.70, u1: 1.0, layer: 0 }
+      ];
 
       growElectricVine(r, vines, null, {
-        pts: pts_helix,
-        len: 1.25,
-        d0: 0, // Simultaneous ignition across the word
+        pts: pts_up,
+        len: 1.1,
+        d0: 0,
         dur_grow: ELEC_GROW_T,
         dur_hold: ELEC_HOLD_T,
         dur_contract: ELEC_CONTRACT_T,
         cycleT: ELEC_CYCLE_T,
-        minFr: 0.35,
-        segs: segs_helix
+        minFr: 0.05,
+        segs: segs_up
       });
 
-      // 2. BIDIRECTIONAL CIRCUIT BRIDGE (Alternates propagation: L->R on even, R->L on odd)
+      // 2. LOWER ELECTRICAL DISCHARGE: Grows DOWNWARDS from letter waist under baseline & feet
+      const p_dn0 = [x_origin, y_origin];
+      const p_dn1 = [x_origin * 1.4, -0.18 + (r() - 0.5) * 0.05];
+      const p_dn2 = [-x_origin * 0.8, -0.02 + (r() - 0.5) * 0.05];
+      const p_dn3 = [(isEven ? -1 : 1) * w * 0.22 + (r() - 0.5) * w * 0.2, 0.28 + r() * 0.18];
+      const pts_down = bez(p_dn0, p_dn1, p_dn2, p_dn3, 16);
+      const segs_down = [
+        { u0: 0, u1: 0.30, layer: 1 },
+        { u0: 0.30, u1: 0.70, layer: 0 },
+        { u0: 0.70, u1: 1.0, layer: 1 }
+      ];
+
+      growElectricVine(r, vines, null, {
+        pts: pts_down,
+        len: 1.1,
+        d0: 0,
+        dur_grow: ELEC_GROW_T,
+        dur_hold: ELEC_HOLD_T,
+        dur_contract: ELEC_CONTRACT_T,
+        cycleT: ELEC_CYCLE_T,
+        minFr: 0.05,
+        segs: segs_down
+      });
+
+      // 3. BIDIRECTIONAL CIRCUIT BRIDGE (Alternates propagation: L->R on even, R->L on odd)
       if (l.prev) {
         const px = -(mw(l.prev.ch) + w) / 2;
-        const p_prev = [px + 0.08, -0.32 + (r() - 0.5) * 0.12];
-        const p_midBridge = [px * 0.5, -0.42 + (r() - 0.5) * 0.16];
-        const p_entry = [-w * 0.26, -0.36 + (r() - 0.5) * 0.08];
-        const p_curr = [w * 0.36, -0.34 + (r() - 0.5) * 0.08];
+        const p_prev = [px + 0.08, -0.35 + (r() - 0.5) * 0.12];
+        const p_midBridge = [px * 0.5, -0.38 + (r() - 0.5) * 0.14];
+        const p_entry = [-w * 0.26, -0.35 + (r() - 0.5) * 0.08];
+        const p_curr = [w * 0.36, -0.35 + (r() - 0.5) * 0.08];
 
         let pts_bridge;
         if (isEven) {
@@ -1354,7 +1364,7 @@
         growElectricVine(r, vines, null, {
           pts: pts_bridge,
           len: Math.abs(p_curr[0] - p_prev[0]) * 1.1,
-          d0: 0, // Synchronized with main trunk
+          d0: 0,
           dur_grow: ELEC_GROW_T,
           dur_hold: ELEC_HOLD_T,
           dur_contract: ELEC_CONTRACT_T,
@@ -1368,7 +1378,7 @@
         });
       }
 
-      // 3. Word start lead-in flourish (sweeping electrical tendril into first letter)
+      // 4. Word start lead-in flourish (sweeping electrical tendril into first letter)
       if (l.wi === 0) {
         const p0 = [-w * 0.85 - r() * 0.3, -0.25 + (r() - 0.5) * 0.25];
         const p1 = [-w * 0.35, -0.35];
@@ -1397,13 +1407,13 @@
       const endVines = [];
       l.endElectricVines = endVines;
 
-      // 1 single flourishing electric arc extending into negative space (balanced, avoids agglomeration)
-      const p0 = [w * 0.12, -0.32];
-      const p1 = [w * 0.42, -0.36];
-      const p2 = [w * 0.98 + r() * 0.4, -0.52 + (r() - 0.5) * 0.3];
-      const pts = bez(p0, p1, p1, p2, 14);
+      // 1. Upper end flourish
+      const p0 = [w * 0.12, -0.35];
+      const p1 = [w * 0.42, -0.42];
+      const p2 = [w * 0.95 + r() * 0.35, -0.65 + (r() - 0.5) * 0.25];
+      const pts_end_up = bez(p0, p1, p1, p2, 14);
       growElectricVine(r, endVines, null, {
-        pts,
+        pts: pts_end_up,
         len: 0.85,
         d0: 0,
         dur_grow: 750,
@@ -1414,6 +1424,26 @@
         segs: [
           { u0: 0, u1: 0.35, layer: 0 },
           { u0: 0.35, u1: 1.0, layer: 1 }
+        ]
+      });
+
+      // 2. Lower end flourish
+      const p0_d = [w * 0.12, -0.35];
+      const p1_d = [w * 0.42, -0.15];
+      const p2_d = [w * 0.85 + r() * 0.35, 0.22 + (r() - 0.5) * 0.2];
+      const pts_end_down = bez(p0_d, p1_d, p1_d, p2_d, 14);
+      growElectricVine(r, endVines, null, {
+        pts: pts_end_down,
+        len: 0.85,
+        d0: 0,
+        dur_grow: 750,
+        dur_hold: 280,
+        dur_contract: 880,
+        cycleT: 2600,
+        minFr: 0.0,
+        segs: [
+          { u0: 0, u1: 0.35, layer: 1 },
+          { u0: 0.35, u1: 1.0, layer: 0 }
         ]
       });
     };
